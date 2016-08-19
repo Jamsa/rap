@@ -1,0 +1,11 @@
+mysql:
+    image: mariadb
+    ports:
+     - "3306:3306"
+    environment:
+     - MYSQL_ROOT_PASSWORD=mysql
+     - MYSQL_DATABASE=rap
+     - MYSQL_USER=rap
+     - MYSQL_PASSWORD=rap
+    volumes:
+     - ./mysql:/var/lib/mysql
