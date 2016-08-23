@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE generatorConfiguration PUBLIC "-//mybatis.org//DTD MyBatis Generator Configuration 1.0//EN" "http://mybatis.org/dtd/mybatis-generator-config_1_0.dtd" >
+<generatorConfiguration >
+    <context id="Mysql" >
+        <plugin type="com.github.jamsa.rap.core.mbg.MyBatisGeneratorPlugin"/>
+        <jdbcConnection driverClass="${driverClass}"
+                        connectionURL="${connectionURL}"
+                        userId="${username}"
+                        password="${password}" />
+        <javaModelGenerator targetPackage="${modelPackage}" targetProject="${src_main_java}" />
+        <sqlMapGenerator targetPackage="${sqlMapperPackage}" targetProject="${src_main_java}" />
+        <javaClientGenerator targetPackage="${mapperPackage}" type="XMLMAPPER" targetProject="${src_main_java}" />
+
+        <!-- sql占位符，表示所有的表
+        <table tableName="%">
+            <generatedKey column="epa_id" sqlStatement="Mysql" identity="true" />
+        </table>
+        -->
+
+        <table domainObjectName="User" tableName="RAP_USER" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+
+            <generatedKey column="ID" sqlStatement="Mysql" identity="true" />
+        </table>
+    </context>
+</generatorConfiguration>

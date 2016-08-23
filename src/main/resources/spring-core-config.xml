@@ -11,13 +11,8 @@
         default-autowire="byName">
 
     <context:component-scan base-package="com.github.jamsa.rap.service" />
+    <context:property-placeholder location="classpath:config.properties"/>
     <tx:annotation-driven transaction-manager="transactionManager"/>
-
-    <!-- 引入配置文件 -->
-    <bean id="propertyConfigurer"
-          class="org.springframework.beans.factory.config.PropertyPlaceholderConfigurer">
-        <property name="location" value="classpath:config.properties" />
-    </bean>
 
     <bean id="dataSource" class="org.apache.commons.dbcp.BasicDataSource"
           destroy-method="close">
@@ -25,38 +20,77 @@
         <property name="url" value="${jdbc.url}" />
         <property name="username" value="${jdbc.username}" />
         <property name="password" value="${jdbc.password}" />
-        <!-- 初始化连接大小 -->
+        <!-- 初始化连接大小
         <property name="initialSize" value="${dbcp.initialSize}"></property>
-        <!-- 连接池最大数量 -->
         <property name="maxActive" value="${dbcp.maxActive}"></property>
-        <!-- 连接池最大空闲 -->
         <property name="maxIdle" value="${dbcp.maxIdle}"></property>
-        <!-- 连接池最小空闲 -->
         <property name="minIdle" value="${dbcp.minIdle}"></property>
-        <!-- 获取连接最大等待时间 -->
         <property name="maxWait" value="${dbcp.maxWait}"></property>
+        -->
     </bean>
 
-    <bean id="sessionFactory" class="org.springframework.orm.hibernate4.LocalSessionFactoryBean" >
-        <property name="dataSource" ref="dataSource"/>
-        <property name="packagesToScan">
-            <list>
-                <value>com.github.jamsa.rap.model</value>
-            </list>
-        </property>
-        <property name="hibernateProperties">
+    <!-- spring和MyBatis完美整合，不需要mybatis的配置映射文件 -->
+    <bean id="sqlSessionFactory" class="org.mybatis.spring.SqlSessionFactoryBean">
+        <property name="dataSource" ref="dataSource" />
+        <property name="configLocation" value="classpath:mybatis-config.xml"/>
+        <!--
+        <property name="mapperLocations" value="classpath:com/github/jamsa/rap/mapper/*Mapper.xml"/>
+        -->
+    </bean>
+
+    <!-- DAO接口所在包名，Spring会自动查找其下的类 autowired byName会导致properties属性不生效-->
+    <bean class="org.mybatis.spring.mapper.MapperScannerConfigurer" autowire="no">
+        <property name="basePackage" value="com.github.jamsa.rap.mapper" />
+        <property name="sqlSessionFactoryBeanName" value="sqlSessionFactory"></property>
+    </bean>
+
+    <!-- (事务管理)transaction manager, use JtaTransactionManager for global tx -->
+    <bean id="transactionManager"
+          class="org.springframework.jdbc.datasource.DataSourceTransactionManager">
+        <property name="dataSource" ref="dataSource" />
+    </bean>
+
+
+    <!--声明式事物配置 数据源事务拦截器 -->
+    <bean id="transactionInterceptor" class="org.springframework.transaction.interceptor.TransactionInterceptor">
+        <!-- 事务拦截器bean需要依赖注入一个事务管理器 -->
+        <property name="transactionManager" ref="transactionManager"/>
+        <!-- 定义事务传播属性-->
+        <property name="transactionAttributes">
             <props>
-                <prop key="hibernate.dialect">${hibernate.dialect}</prop>
-                <prop key="hibernate.show_sql">${hibernate.show_sql:false}</prop>
-                <prop key="hibernate.format_sql">${hibernate.format_sql:false}</prop>
-                <prop key="hibernate.hbm2ddl.auto">update</prop>
+                <prop key="save*">PROPAGATION_REQUIRED</prop>
+                <prop key="insert*">PROPAGATION_REQUIRED</prop>
+                <prop key="create*">PROPAGATION_REQUIRED</prop>
+                <prop key="update*">PROPAGATION_REQUIRED</prop>
+                <prop key="delete*">PROPAGATION_REQUIRED</prop>
+                <prop key="remove*">PROPAGATION_REQUIRED</prop>
+                <prop key="batch*">PROPAGATION_REQUIRED</prop>
+                <prop key="execute*">PROPAGATION_REQUIRED</prop>
+                <prop key="get*">PROPAGATION_REQUIRED,readOnly</prop>
+                <prop key="find*">PROPAGATION_REQUIRED,readOnly</prop>
+                <prop key="query*">PROPAGATION_REQUIRED,readOnly</prop>
+                <prop key="search*">PROPAGATION_REQUIRED,readOnly</prop>
             </props>
         </property>
     </bean>
 
-    <bean id="transactionManager"  class="org.springframework.orm.hibernate4.HibernateTransactionManager">
-        <property name="sessionFactory" ref="sessionFactory" />
+    <!-- 所有Service结尾的Bean需要自动创建事务代理 -->
+    <bean class="org.springframework.aop.framework.autoproxy.BeanNameAutoProxyCreator">
+        <!-- 指定对满足哪些bean name的bean自动生成业务代理 -->
+        <property name="beanNames">
+            <value>*Service</value>
+        </property>
+        <!-- 下面定义BeanNameAutoProxyCreator所需的事务拦截器-->
+        <property name="interceptorNames">
+            <list>
+                <value>transactionInterceptor</value>
+            </list>
+        </property>
     </bean>
+    <bean class="org.springframework.transaction.interceptor.TransactionAttributeSourceAdvisor">
+        <property name="transactionInterceptor" ref="transactionInterceptor"/>
+    </bean>
+
 
     <bean id="persistenceExceptionTranslationPostProcessor"
           class="org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor"/>

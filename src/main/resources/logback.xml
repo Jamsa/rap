@@ -12,6 +12,22 @@
         <appender-ref ref="STDOUT" />
     </logger>
 
+    <!--输出sql日志-->
+    <logger name="com.github.jamsa.rap.mapper" level="debug"
+            additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+    <!--
+    <logger name="com.github.jamsa" level="info"
+            additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+
+    <logger name="org.mybatis" level="debug"
+            additivity="false">
+        <appender-ref ref="STDOUT" />
+    </logger>
+    -->
     <root level="info">
         <appender-ref ref="STDOUT" />
     </root>

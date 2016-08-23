@@ -1,10 +1,14 @@
 package com.github.jamsa.rap.service;
 
+import com.github.jamsa.rap.mapper.UserMapper;
 import com.github.jamsa.rap.model.User;
 import org.junit.Assert;
 import org.junit.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.config.PropertyPlaceholderConfigurer;
+import org.springframework.dao.DataAccessResourceFailureException;
 
+import javax.sql.DataSource;
 import java.util.HashMap;
 
 /**
@@ -15,16 +19,20 @@ public class UserServiceTest extends BaseTest {
     @Autowired
     UserService userService;
 
-    @Test
-    public void add() throws Exception {
-        User u = new User();
 
-        //userService.save(u);
+    @Test
+    public void crud() throws Exception {
+        User u = new User();
+        u.setUsername("xxxxx");
+        userService.save(u);
+        //u.setUsername("xxxxx1");
+        u.setFullname("bbb");
+        userService.update(u);
+        userService.delete(u);
     }
 
     @Test
     public void count(){
-        Integer count = userService.queryForObject("select count(*) from User",new HashMap(),false);
-        Assert.assertEquals(count,1);
+
     }
 }
