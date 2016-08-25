@@ -1,5 +1,7 @@
 package com.github.jamsa.rap.core.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
@@ -8,6 +10,8 @@ import java.util.Map;
  * Created by zhujie on 16/8/16.
  */
 public abstract class BaseEntity<P extends Serializable> implements Serializable {
+
+    @JsonIgnore
     private Map changedProperties = new HashMap();
 
     public Map getChangedProperties() {

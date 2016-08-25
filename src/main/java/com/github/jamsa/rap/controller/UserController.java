@@ -1,5 +1,8 @@
 package com.github.jamsa.rap.controller;
 
+import com.github.jamsa.rap.core.controller.BaseEntityController;
+import com.github.jamsa.rap.core.service.BaseEntityService;
+import com.github.jamsa.rap.model.User;
 import com.github.jamsa.rap.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
@@ -12,13 +15,12 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/user")
-public class UserController {
-    //@Autowired
-    //UserService userService;
+public class UserController extends BaseEntityController<User,Long> {
+    @Autowired
+    UserService userService;
 
-
-    @RequestMapping("/")
-    private String index(Map<String,Object> model){
-        return "user/list";
+    @Override
+    public BaseEntityService<User, Long> getService() {
+        return userService;
     }
 }

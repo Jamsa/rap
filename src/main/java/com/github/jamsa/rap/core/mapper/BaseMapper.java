@@ -1,5 +1,7 @@
 package com.github.jamsa.rap.core.mapper;
 
+import java.util.List;
+
 /**
  * Created by zhujie on 16/8/23.
  */
@@ -21,4 +23,6 @@ public interface BaseMapper<M,P> {
 
 
     int updateByPrimaryKey(M record);
+
+    List<M> selectByCondition(M record);
 }
