@@ -19,8 +19,23 @@
 
         <table domainObjectName="User" tableName="RAP_USER" enableCountByExample="false"
                enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
-
-            <generatedKey column="ID" sqlStatement="Mysql" identity="true" />
+            <generatedKey column="USER_ID" sqlStatement="Mysql" identity="true" />
+        </table>
+        <table domainObjectName="Role" tableName="RAP_ROLE" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+            <generatedKey column="ROLE_ID" sqlStatement="Mysql" identity="true" />
+        </table>
+        <table domainObjectName="Resource" tableName="RAP_RESOURCE" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+            <generatedKey column="RESOURCE_ID" sqlStatement="Mysql" identity="true" />
+        </table>
+        <table domainObjectName="DictType" tableName="RAP_DICT_TYPE" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+            <generatedKey column="DICT_TYPE_ID" sqlStatement="Mysql" identity="true" />
+        </table>
+        <table domainObjectName="DictValue" tableName="RAP_DICT_VALUE" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+            <generatedKey column="DICT_VALUE_ID" sqlStatement="Mysql" identity="true" />
         </table>
     </context>
 </generatorConfiguration>

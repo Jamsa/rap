@@ -13,12 +13,12 @@ import com.github.jamsa.rap.model.User;
  * Created by zhujie on 16/7/5.
  */
 @Component
-public class UserService extends BaseEntityService<User,Long> {
+public class UserService extends BaseEntityService<User,Integer> {
     @Autowired
     UserMapper userMapper;
 
     @Override
-    public BaseMapper<User, Long> getMapper() {
+    public BaseMapper<User, Integer> getMapper() {
         return this.userMapper;
     }
 

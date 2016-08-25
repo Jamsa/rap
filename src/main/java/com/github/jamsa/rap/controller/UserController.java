@@ -15,12 +15,12 @@ import java.util.Map;
  */
 @Controller
 @RequestMapping("/user")
-public class UserController extends BaseEntityController<User,Long> {
+public class UserController extends BaseEntityController<User,Integer> {
     @Autowired
     UserService userService;
 
     @Override
-    public BaseEntityService<User, Long> getService() {
+    public BaseEntityService<User, Integer> getService() {
         return userService;
     }
 }
