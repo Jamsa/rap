@@ -88,7 +88,10 @@
                 columnDefs: [{
                     targets: 4,
                     render: function (data, type, row, meta) {
-                        return '<a type="button" class="btn btn-danger btn-block" href="#" onclick=delFromID(' + row.id + ') >删除</a>';
+                        return '<div class="text-center">' +
+                                '<a class="btn fa fa-edit"></a>' +
+                                '<a class="btn fa fa-trash"></a>' +
+                                '</div>';
                     }
                 }]
             });
