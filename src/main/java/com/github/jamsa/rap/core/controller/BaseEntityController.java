@@ -3,11 +3,13 @@ package com.github.jamsa.rap.core.controller;
 import com.github.jamsa.rap.core.model.BaseEntity;
 import com.github.jamsa.rap.core.service.BaseEntityService;
 import com.github.pagehelper.PageInfo;
+import org.springframework.ui.ModelMap;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.ResponseBody;
 
+import javax.servlet.http.HttpServletRequest;
 import java.io.Serializable;
 
 /**
@@ -17,7 +19,8 @@ public abstract class BaseEntityController<T extends BaseEntity<P>,P extends Ser
     public abstract BaseEntityService<T,P> getService();
 
     @RequestMapping(value = "/index",method = RequestMethod.GET)
-    public String index(){
+    public String index(ModelMap map, HttpServletRequest request){
+        map.put("isAjaxRequest",isAjaxRequest(request));
         return "user/list";
     }
 

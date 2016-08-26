@@ -21,13 +21,24 @@ public class UserServiceTest extends BaseTest {
     public void crud() throws Exception {
         User u = new User();
         u.setUsername("xxxxx");
+        u.setPassword("padfsdf");
+        u.setFullname("fulfda");
         userService.save(u);
         //u.setUsername("xxxxx1");
         u.setFullname("bbb");
         userService.update(u);
-        userService.delete(u);
+        //userService.delete(u);
+        for(int i = 0;i<20;i++){
+            u = new User();
+            u.setUsername("xxxxx");
+            u.setPassword("padfsdf");
+            u.setFullname("fulfda");
+            userService.save(u);
+        }
         u = new User();
         u.setUsername("xx");
+        u.setPassword("fdsafdpwd");
+        u.setFullname("fulfda");
         List<User> result = userService.findByCondition(u);
         for(User user :result){
             System.out.println(user.getUserId());
