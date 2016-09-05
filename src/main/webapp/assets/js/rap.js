@@ -6,7 +6,196 @@
 (function($){
     $.extend({
         rap:{
+            randomId:function(){
+                return Math.round(new Date().getTime() + (Math.random() * 100));
+            },
+            dialog:{
+                dialog:function(options){
+                    var eleId = '_rap_dlg_'+$.rap.randomId();
+                    var opts = $.extend({
+                        onclose:function(){},
+                        title:'Dialog title',
+                        styleClass:'',
+                        message:'Message.',
+                        buttons:[{
+                            label:'Button',
+                            type: 'button',
+                            styleClass:'btn-default',
+                            attr:{
+                                'data-dismiss':'modal'
+                            },
+                            click:function(){
+                                opts.onclose();
+                                setTimeout(function(){
+                                    $('#'+eleId).remove();
+                                });
+                            }
+                        }]
+                    },options?options:{});
 
+                    var template = '<div class="modal ' + opts.styleClass+ '" tabindex="-1" role="dialog" id="' + eleId +'">'+
+                        '    <div class="modal-dialog" role="document">'+
+                        '      <div class="modal-content">'+
+                        '        <div class="modal-header">'+
+                        '          <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>'+
+                        '          <h4 class="modal-title">Dialog Title</h4>'+
+                        '        </div>'+
+                        '        <div class="modal-body">'+
+                        '          <p>One fine body&hellip;</p>'+
+                        '        </div>'+
+                        '        <div class="modal-footer">'+
+                        //'          <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>'+
+                        //'          <button type="button" class="btn btn-primary">确定</button>'+
+                        '        </div>'+
+                        '      </div>'+
+                        '    </div>'+
+                        '  </div>';
+
+                    var ele = $('body').append(template);
+
+                    //隐藏时调用onclose并自动销毁
+                    $('#'+eleId).on('hidden.bs.modal', function () {
+                        var result = opts.onclose($('#'+eleId));
+                        if(result===false){
+
+                        }else{
+                            setTimeout(function(){
+                                $('#'+eleId).remove();
+                                //console.log('modal element removed');
+                            });
+                        }
+                    });
+
+                    var footer = ele.find('.modal-footer');
+                    $.each(opts.buttons,function(idx,btnOpts){
+                        var button = $('<button/>').addClass('btn');
+                        if(btnOpts.label) button.html(btnOpts.label);
+                        if(btnOpts.styleClass) button.addClass(btnOpts.styleClass);
+                        if(btnOpts.attr) button.attr(btnOpts.attr);
+                        if(btnOpts.click){
+                            button.click(function(){
+                                btnOpts.click($('#'+eleId));
+                            });
+                        }
+                        footer.append(button);
+                    });
+
+                    var title = ele.find('.modal-title');
+                    title.html(opts.title);
+
+                    var msg = ele.find('.modal-body');
+                    msg.html(opts.message);
+
+                    $('#'+eleId).modal('show');
+                },
+                message:function(title,msg,onok,ponclose){
+                    $.rap.dialog.dialog({title:title,
+                        message:msg,
+                        onclose:ponclose?ponclose:function(modal){},
+                        buttons:[{label:'确定',
+                            styleClass:'btn-primary btn-default',
+                            attr:{
+                                'data-dismiss':'modal'
+                            },
+                            click:function(modal){
+                                if(onok){
+                                    var result = onok(modal);
+                                    if(result===false){
+
+                                    }else{
+                                        modal.modal('hide');
+                                    }
+                                }
+                            }}]
+                    });
+                },
+                confirm:function(title,msg,onok,oncancel,ponclose){
+                    $.rap.dialog.dialog({title:title,
+                        message:msg,
+                        onclose:ponclose?ponclose:function(modal){},
+                        buttons:[{
+                            label:'确定',
+                            styleClass:'btn-primary',
+                            click:function(modal){
+                                if(onok){
+                                    var result = onok(modal);
+                                    if(result===false){
+
+                                    }else{
+                                        modal.modal('hide');
+                                    }
+                                }
+                            }
+                        },{
+                            label:'取消',
+                            styleClass:'btn-default',
+                            click:function(modal){
+                                if(oncancel){
+                                    oncancel();
+                                }
+                            },
+                            attr:{
+                                'data-dismiss':'modal'
+                            }}]
+                    });
+                },
+                input:function(title,msg,onok,oncancel,ponclose){
+                    var inputId = '_rap_dlg_input_'+$.rap.randomId();
+                    var content = '<div class="form-group"><label for="'+inputId+'">'+msg+'</label>'+
+                        '<input type="text" class="form-control" id="'+inputId+'"></div>';
+                    $.rap.dialog.dialog({title:title,
+                        message:content,
+                        onclose:ponclose?function(modal){ponclose(modal,$('#'+inputId).val());}:function(modal){},
+                        buttons:[{
+                            label:'确定',
+                            styleClass:'btn-primary',
+                            click:function(modal){
+                                if(onok){
+                                    var inputVal = $('#'+inputId).val();
+                                    var result = onok(modal,inputVal);
+                                    if(result===false){
+                                    }else{
+                                        modal.modal('hide');
+                                    }
+                                }
+                            }
+                        },{
+                            label:'取消',
+                            styleClass:'btn-default',
+                            click:function(modal){
+                                if(oncancel){
+                                    var inputVal = $('#'+inputId).val();
+                                    oncancel(modal,inputVal);
+                                }
+                            },
+                            attr:{
+                                'data-dismiss':'modal'
+                            }}]
+                    });
+                },
+                error:function(title,msg,onok,ponclose){
+                    $.rap.dialog.dialog({title:title,
+                        message:msg,
+                        styleClass:'modal-warning',
+                        onclose:ponclose?ponclose:function(modal){},
+                        buttons:[{label:'确定',
+                            styleClass:'btn-outline',
+                            attr:{
+                                'data-dismiss':'modal'
+                            },
+                            click:function(modal){
+                                if(onok){
+                                    var result = onok();
+                                    if(result===false){
+
+                                    }else{
+                                        modal.modal('hide');
+                                    }
+                                }
+                            }}]
+                    });
+                }
+            }
         }
     });
 })(jQuery);
@@ -52,6 +241,7 @@
             order: [],  //取消默认排序查询,否则复选框一列会出现小箭头
             renderer: "bootstrap",  //渲染样式：Bootstrap和jquery-ui
             pagingType: "simple_numbers",  //分页样式：simple,simple_numbers,full,full_numbers
+            info:true,
             columnDefs: [{
                 "targets": 'nosort',  //列的样式名
                 "orderable": false    //包含上样式名‘nosort’的禁止排序
@@ -78,8 +268,8 @@
                 {"data": "col2"}
             ]
         },options?options:{});
-
-        return $(this).dataTable(opts);
+        var result = this.DataTable(opts);
+        return result;
     };
 
     $.fn.RapGrid.getGridData=function(data,result){
