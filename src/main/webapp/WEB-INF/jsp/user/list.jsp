@@ -28,14 +28,19 @@
 <section class="content">
 
     <div class="row">
-        <div class="col-xs-12">
+        <div class="col-sm-12">
             <div class="box">
                 <div class="box-header">
-                    <h3 class="box-title">Hover Data Table</h3>
+
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body">
-                    <table id="userTable" class="table table-bordered table-hover">
+                    <div class="row">
+                        <div class="col-sm-offset-11">
+                            <button class="btn btn-primary" onclick="userListPage.add();">新建</button>
+                        </div>
+                    </div>
+                    <table id="userTable" width="100%" class="table table-bordered table-hover">
                         <thead>
                         <tr>
                             <th>用户名</th>
@@ -54,13 +59,19 @@
 
 </section>
 <!-- /.content -->
+
+<div id="userEditPage" class="modal">
+
+</div>
 <c:if test="${!isAjaxRequest}">
 <%@ include file="/WEB-INF/jsp/inc/footer.jsp" %>
 </c:if>
 
 <script>
     var userListPage = {
+        grid: null,
         init: function () {
+            var listPage = this;
             var userTable = $('#userTable').RapGrid({
                 ajax: function (data, callback, settings) {
                     //封装请求参数
@@ -89,14 +100,56 @@
                     targets: 4,
                     render: function (data, type, row, meta) {
                         return '<div class="text-center">' +
-                                '<a class="btn fa fa-edit"></a>' +
-                                '<a class="btn fa fa-trash"></a>' +
+                                '<a class="btn fa fa-edit" onclick="userListPage.edit('+row.userId+');"></a>' +
+                                '<a class="btn fa fa-trash" onclick="userListPage.del('+row.userId+');"></a>' +
                                 '</div>';
                     }
                 }]
             });
-        }
+            this.grid = userTable;
 
+            $('#userEditPage').on('rap:user:saved',function(evt,data){
+                if(data.userId){
+                    listPage.edit(data.userId);
+                }
+                $("#userEditPage").modal('hide');
+                listPage.grid.ajax.reload(null,false);
+            });
+            $('#userEditPage').on('rap:user:updated',function(evt,data){
+                $("#userEditPage").modal('hide');
+                listPage.grid.ajax.reload(null,false);
+            });
+            $('#userEditPage').on('rap:user:delete',function(evt,data){
+                listPage.del(data);
+            });
+        },
+        query:function(){
+            this.grid.ajax.reload();
+        },
+        add:function(){
+            $("#userEditPage").html('');
+            $("#userEditPage").load('<c:url value="/user/add" />');
+            $("#userEditPage").modal('show');
+        },
+        edit:function(id){
+            $("#userEditPage").html('');
+            $("#userEditPage").load('<c:url value="/user/edit/" />'+id);
+            $("#userEditPage").modal('show');
+        },
+        del: function(id) {
+            var listPage = this;
+            $.rap.dialog.confirm('确认','确定要删除记录吗?',function(){
+                $.ajax({
+                    cache: false,
+                    type: "POST",
+                    url: '<c:url value="/user/delete/"/>'+id,
+                    async: false,
+                    success: function (data) {
+                        listPage.grid.ajax.reload(null,false);
+                    }
+                });
+            });
+        }
     };
     userListPage.init();
 

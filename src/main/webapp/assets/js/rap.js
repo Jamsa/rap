@@ -6,6 +6,9 @@
 (function($){
     $.extend({
         rap:{
+            global:{
+                contextPath:"/rap"
+            },
             randomId:function(){
                 return Math.round(new Date().getTime() + (Math.random() * 100));
             },
@@ -24,11 +27,10 @@
                             attr:{
                                 'data-dismiss':'modal'
                             },
-                            click:function(){
-                                opts.onclose();
-                                setTimeout(function(){
+                            click:function(modal){
+                                /*setTimeout(function(){
                                     $('#'+eleId).remove();
-                                });
+                                });*/
                             }
                         }]
                     },options?options:{});
@@ -51,9 +53,10 @@
                         '    </div>'+
                         '  </div>';
 
-                    var ele = $('body').append(template);
+                    $('body').append(template);
+                    var ele = $('#'+eleId);
 
-                    //隐藏时调用onclose并自动销毁
+                        //隐藏时调用onclose并自动销毁
                     $('#'+eleId).on('hidden.bs.modal', function () {
                         var result = opts.onclose($('#'+eleId));
                         if(result===false){
@@ -234,7 +237,7 @@
             lengthChange:false,//禁止选择每页显示
             autoWidth: false,  //禁用自动调整列宽
             stripeClasses: ["odd", "even"],  //为奇偶行加上样式，兼容不支持CSS伪类的场合
-            processing: true,  //隐藏加载提示,自行处理
+            processing: false,  //隐藏加载提示,自行处理
             serverSide: true,  //启用服务器端分页
             searching: false,  //禁用原生搜索
             orderMulti: false,  //启用多列排序
@@ -298,6 +301,28 @@
     }
 })(jQuery);
 
+/** 校验类 **/
+(function($){
+    $.fn.RapValidate=function(options){
+        var opts = $.extend({
+            errorElement:'span',
+            errorClass:'help-block',
+            highlight: function(element, errorClass, validClass) {
+                var ele = $(element).parent('div[class*="form-group"]');
+                ele.addClass('has-error').removeClass('');
+
+            },
+            unhighlight: function(element, errorClass, validClass) {
+                var ele = $(element).parent('div[class*="form-group"]');
+                ele.removeClass('has-error').addClass('');
+            }
+        },options?options:{});
+        $(opts.id).html('');
+
+        return $(this).validate(opts);
+    }
+})(jQuery);
+
 /** ajax 加载,类pjax模式 **/
 (function($){
     $.fn.RapAjaxLoad=function(options){
@@ -309,7 +334,247 @@
 
         $(this).click(function(){
             $(opts.id).load(opts.href);
+            return false;
         });
-
     }
 })(jQuery);
+
+/** ajax 初始设置 **/
+(function($){
+    $.ajaxSetup({
+        success:function(resp,status,xhr){
+            //console.log('##'+status);
+            if(status==='500'){
+                $.rap.dialog.error("出错",resp);
+            }
+        },
+        error:function(xhr,status,errorThrown){
+            //console.log('##'+status);
+            $.rap.dialog.error("出错",errorThrown);
+        }
+    });
+})(jQuery);
+
+
+/** 列表页 **/
+(function($){
+    $.fn.RapListPage=function(options){
+        var listPage = this;
+        var opts = $.extend({
+            modelName:'modelName',
+            keyAttrName:'id',//主键属性名
+            editElementId:undefined,
+            listOptions:{
+                url:undefined,
+                queryFormId:undefined,
+                gridOptions:{},
+                onList:function(data){},
+                onListSuccess:function(data){}
+            },
+            addOptions:{
+                url:undefined,
+                onAdd:function(data){},
+                onAddSuccess:function(data){}
+            },
+            editOptions:{
+                url:undefined,
+                onEdit:function(id,data){},
+                onEditSuccess:function(data){}
+            },
+            delOptions:{
+                url:undefined,
+                onDel:function(id,data){},
+                onDelSuccess:function(data){}
+            },
+            messages:{//编辑页传递来的消息
+                onRecordSaved:function(data){},
+                onRecordUpdated:function(data){}
+            }
+        },options?options:{});
+        var modulePath = $.rap.global.contextPath+'/'+opts.modelName;
+        if(!opts.listOptions.url) opts.listOptions.url=modulePath+'/list';
+        if(!opts.addOptions.url) opts.addOptions.url=modulePath+'/add';
+        if(!opts.editOptions.url) opts.editOptions.url=modulePath+'/edit';
+        if(!opts.delOptions.url) opts.delOptions.url=modulePath+'/del';
+
+        if(!opts.listOptions.queryFormId) opts.listOptions.queryFormId=opts.modelName+'QueryForm';
+        if(!opts.editElementId) opts.editElementId=opts.modelName+'EditPage';
+
+        listPage.options = opts;
+        //属性处理结束
+
+        //表格的处理
+        var gridOptions = $.extend({
+            ajax: function (data, callback, settings) {
+                //封装请求参数
+                var param = $.fn.RapGrid.getGridParam(data);
+                var cbResult = listPage.options.listOptions.onList(data);
+                if(cbResult===false) {
+                    console.log('Rap listpage.grid.ajax onList回调中止了查询操作。');
+                    return;
+                }
+
+                $.ajax({
+                    type: "GET",
+                    url: listPage.options.listOptions.url,
+                    cache: false,  //禁用缓存
+                    data: param,  //传入组装的参数
+                    dataType: "json",
+                    success: function (result) {
+                        var cbData = $.fn.RapGrid.getGridData(data, result);
+                        var cbResult = listPage.options.listOptions.onListSuccess(cbData);
+                        if(cbResult===false) return;
+
+                        callback(cbData);
+                    }
+                });
+            },
+            //列表表头字段
+            columns: [
+                {"data": "col1"},
+                {"data": "col1"},
+                {"data": "col3"},
+                {"data": "col4"},
+                {"data": null}
+            ],
+            columnDefs: [{
+                targets: 4,
+                render: function (data, type, row, meta) {
+                    return '<div class="text-center">' +
+                        '<a class="btn fa fa-edit"></a>' +
+                        '<a class="btn fa fa-trash"></a>' +
+                        '</div>';
+                }
+            }]
+        },listPage.options.listOptions.gridOptions?listPage.options.listOptions.gridOptions:{});
+        listPage.grid = $(this).RapGrid(gridOptions);
+        //表格处理结束
+
+        var editElementSelector = '#'+listPage.options.editElementId;
+        //事件绑定处理
+        $(editElementSelector).on('rap:'+listPage.options.modelName+':saved',function(evt,data){
+            var cbResult = listPage.options.messages.onRecordSaved(data);
+            if(cbResult===false) return;
+
+            if(data[listPage.options.keyAttrName]){
+                listPage.edit(data[listPage.options.keyAttrName]);
+            }
+            $(editElementSelector).modal('hide');
+            listPage.grid.ajax.reload(null,false);
+        });
+        $(editElementSelector).on('rap:'+listPage.options.modelName+':updated',function(evt,data){
+            var cbResult = listPage.options.messages.onRecordUpdated(data);
+            if(cbResult===false) return;
+
+            $(editElementSelector).modal('hide');
+            listPage.grid.ajax.reload(null,false);
+        });
+        $(editElementSelector).on('rap:'+listPage.options.modelName+':delete',function(evt,data){
+            listPage.del(data);
+        });
+        //事件处理结束
+
+        listPage.query = function(listOpts){
+            listPage.grid.ajax.reload();
+        };
+
+        listPage.add = function(addOpts){
+            var opts = $(listPage.options.addOptions,addOpts?addOpts:{});
+            var cbResult = opts.onAdd();
+            if(cbResult===false) return;
+            var editElementSelector = '#'+listPage.options.editElementId;
+
+            $(editElementSelector).html('');
+            $(editElementSelector).load(opts.url);
+            $(editElementSelector).modal('show');
+
+            cbResult = opts.onAddSuccess();
+            if(cbResult===false) return;
+        };
+
+        listPage.edit = function(id,editOpts){
+            var opts = $(listPage.options.editOptions,editOpts?editOpts:{});
+            var cbResult = opts.onEdit();
+            if(cbResult===false) return;
+            var editElementSelector = '#'+listPage.options.editElementId;
+
+            $(editElementSelector).html('');
+            $(editElementSelector).load(opts.url+'/'+id);
+            $(editElementSelector).modal('show');
+
+            cbResult = opts.onEditSuccess();
+            if(cbResult===false) return;
+        };
+
+        listPage.del = function(id,opts){
+
+        };
+
+        return listPage;
+    }
+})(jQuery);
+
+/** 编辑页 **/
+(function($){
+    $.fn.RapEditPage=function(options){
+        var editPage = this;
+
+        var opts = $.extend({
+            modelName:'modelName',
+            keyAttrName:'id',//主键属性名
+            editFormId:undefined,
+            editElementId:undefined,//编辑元素id,在列表页中
+            isAdd:false,
+            saveOptions:{
+                url:undefined,
+                onSave:function(data){},
+                onSaveSuccess:function(data){}
+            },
+            validateOptions:{}
+        },options?options:{});
+
+        var modulePath = $.rap.global.contextPath+'/'+opts.modelName;
+        if(!opts.saveOptions.url){
+            opts.saveOptions.url=modulePath+ (opts.isAdd===true?'/save':'/update');
+        }
+
+        if(!opts.editFormId) opts.editFormId=opts.modelName+'EditForm';
+        if(!opts.editElementId) opts.editElementId=opts.modelName+'EditPage';
+
+        editPage.options = opts;
+
+        editPage.save=function(saveOpts){
+            var opts = $.extend(editPage.options.saveOptions,saveOpts?saveOpts:{});
+            var formSelector = '#'+editPage.options.editFormId;
+
+            if($(formSelector).valid()===false) return;
+
+            var formData = $(formSelector).serialize();
+
+            var cbResult = opts.saveOptions.onSave(formData);
+            if(cbResult===false) return;
+
+            $.ajax({
+                cache: false,
+                type: "POST",
+                url: opts.url,
+                data: formData,
+                async: false,
+                success: function (data) {
+                    //$.rap.dialog.message('提示','保存成功!');
+                    var cbResult = opts.saveOptions.onSaveSuccess(data);
+                    if(cbResult===false) return;
+
+                    var editElementSelector = '#'+editPage.options.editElementId;
+                    var messageKey = 'rap:'+editPage.options.modelName+':'+editPage.options.isAdd?'saved':'updated';
+                    $(editElementSelector).trigger(messageKey,[data]);
+                }
+            });
+        };
+
+
+
+        return this;
+    }
+})(jQuery);
+

@@ -4,7 +4,6 @@
 <!-- Bootstrap 3.3.6 -->
 <script src="<c:url value="/assets/vendor/bootstrap/js/bootstrap.min.js"/>"></script>
 
-
 <!-- DataTables -->
 <script src="<c:url value="/assets/vendor/plugins/datatables/jquery.dataTables.min.js"/>"></script>
 <script src="<c:url value="/assets/vendor/plugins/datatables/dataTables.bootstrap.min.js"/>"></script>
@@ -18,6 +17,11 @@
 
 <%--
 <script src="<c:url value="/assets/vendor/jquery.pjax.js"/>"></script>
+<script src="<c:url value="/assets/vendor/bootstrap-dialog.min.js"/>"></script>
 --%>
+<script src="<c:url value="/assets/vendor/jquery-validate/jquery.validate.min.js"/>"></script>
+<script src="<c:url value="/assets/vendor/jquery-validate/additional-methods.min.js"/>"></script>
+<script src="<c:url value="/assets/vendor/jquery-validate/messages_zh.min.js"/>"></script>
+
 <script src="<c:url value="/assets/js/rap.js"/>"></script>
 

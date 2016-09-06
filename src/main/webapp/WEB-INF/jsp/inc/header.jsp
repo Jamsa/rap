@@ -11,6 +11,9 @@
 <!-- Ionicons -->
 <link rel="stylesheet" href="<c:url value="/assets/vendor/ionicons/css/ionicons.min.css"/>">
 
+<!-- DataTables -->
+<link rel="stylesheet" href="<c:url value="/assets/vendor/plugins/datatables/dataTables.bootstrap.css"/>">
+
 <!-- Theme style -->
 <link rel="stylesheet" href="<c:url value="/assets/vendor/adminlte/css/AdminLTE.min.css"/>">
 

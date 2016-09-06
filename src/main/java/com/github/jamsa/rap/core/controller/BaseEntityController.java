@@ -17,11 +17,27 @@ import java.io.Serializable;
  */
 public abstract class BaseEntityController<T extends BaseEntity<P>,P extends Serializable> extends BaseController {
     public abstract BaseEntityService<T,P> getService();
+    public abstract String getViewDir();
 
     @RequestMapping(value = "/index",method = RequestMethod.GET)
     public String index(ModelMap map, HttpServletRequest request){
         map.put("isAjaxRequest",isAjaxRequest(request));
-        return "user/list";
+        return this.getViewDir()+"/list";
+    }
+
+    @RequestMapping(value = "/edit/{id}",method = RequestMethod.GET)
+    public String edit(ModelMap map, HttpServletRequest request, @PathVariable("id") P id){
+        map.put("isAjaxRequest",isAjaxRequest(request));
+        map.put("record",this.getService().findByPrimaryKey(id));
+        map.put("isAdd",Boolean.FALSE);
+        return this.getViewDir()+"/edit";
+    }
+
+    @RequestMapping(value = "/add",method = RequestMethod.GET)
+    public String add(ModelMap map, HttpServletRequest request){
+        map.put("isAjaxRequest",isAjaxRequest(request));
+        map.put("isAdd",Boolean.TRUE);
+        return this.getViewDir()+"/edit";
     }
 
     @RequestMapping(value = "/list",method = RequestMethod.GET)
