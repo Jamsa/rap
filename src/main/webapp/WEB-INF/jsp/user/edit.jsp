@@ -58,12 +58,7 @@
                     <c:if test="${isAjaxRequest}">
                     <button type="button" class="btn btn-default pull-left" data-dismiss="modal">取消</button>
                     </c:if>
-                    <c:if test="${isAdd}">
-                        <button type="button" class="btn btn-primary" onclick="userEditPage.save();">保存</button>
-                    </c:if>
-                    <c:if test="${!isAdd}">
-                        <button type="button" class="btn btn-primary" onclick="userEditPage.update();">保存</button>
-                    </c:if>
+                    <button type="button" class="btn btn-primary" onclick="userEditPage.save();">保存</button>
                 </div>
             </div>
             <!-- /.modal-content -->
@@ -75,62 +70,14 @@
 </c:if>
 
 <script>
-    var userEditPage = {
-        init: function () {
-
-            $('#userEditForm').RapValidate({
-                rules:{
-                    username:{required:true},
-                    fullname:{required:true}
-                }
-            });
-        },
-        save: function() {
-            var editPage = this;
-            if($('#userEditForm').valid()===false) return;
-            $.ajax({
-                cache: false,
-                type: "POST",
-                url: '<c:url value="/user/save"/>',
-                data: $('#userEditForm').serialize(),
-                async: false,
-                success: function (data) {
-                    //$.rap.dialog.message('提示','保存成功!');
-                    $('#userEditPage').trigger('rap:user:saved',[data]);
-                }
-            });
-        },
-        update: function() {
-            if($('#userEditForm').valid()===false) return;
-            $.ajax({
-                cache: false,
-                type: "POST",
-                url: '<c:url value="/user/update"/>',
-                data: $('#userEditForm').serialize(),
-                async: false,
-                success: function (data) {
-                    //$.rap.dialog.message('提示','保存成功!');
-                    $('#userEditPage').trigger('rap:user:updated',[data]);
-                }
-            });
-        },
-        del: function(id) {
-            $('#userEditPage').trigger('rap:user:delete',[id]);
-            /*
-            $.ajax({
-                cache: false,
-                type: "GET",
-                url: '<c:url value="/user/delete/"/>'+id,
-                async: false,
-                success: function (data) {
-                    $('#userEditPage').trigger('rap:user:deleted',[data]);
-                }
-            });
-            */
+    $('#userEditForm').RapValidate({
+        rules:{
+            username:{required:true},
+            fullname:{required:true}
         }
-    };
+    });
 
-    userEditPage.init();
+    var userEditPage = $('#userEditForm').RapEditPage({modelName:'user',keyAttrName:'userId',isAdd:<c:out value="${isAdd}"/> });
 
 </script>
 <c:if test="${!isAjaxRequest}">

@@ -68,26 +68,11 @@
 </c:if>
 
 <script>
-    var userListPage = {
-        grid: null,
-        init: function () {
-            var listPage = this;
-            var userTable = $('#userTable').RapGrid({
-                ajax: function (data, callback, settings) {
-                    //封装请求参数
-                    var param = $.fn.RapGrid.getGridParam(data);
-                    $.ajax({
-                        type: "GET",
-                        url: "<c:url value="/user/list"/>",
-                        cache: false,  //禁用缓存
-                        data: param,  //传入组装的参数
-                        dataType: "json",
-                        success: function (result) {
-                            var cbData = $.fn.RapGrid.getGridData(data, result);
-                            callback(cbData);
-                        }
-                    });
-                },
+    var userListPage = $('#userTable').RapListPage({
+        modelName:'user',
+        keyAttrName:'userId',
+        listOptions:{
+            gridOptions:{
                 //列表表头字段
                 columns: [
                     {"data": "username"},
@@ -105,53 +90,9 @@
                                 '</div>';
                     }
                 }]
-            });
-            this.grid = userTable;
-
-            $('#userEditPage').on('rap:user:saved',function(evt,data){
-                if(data.userId){
-                    listPage.edit(data.userId);
-                }
-                $("#userEditPage").modal('hide');
-                listPage.grid.ajax.reload(null,false);
-            });
-            $('#userEditPage').on('rap:user:updated',function(evt,data){
-                $("#userEditPage").modal('hide');
-                listPage.grid.ajax.reload(null,false);
-            });
-            $('#userEditPage').on('rap:user:delete',function(evt,data){
-                listPage.del(data);
-            });
-        },
-        query:function(){
-            this.grid.ajax.reload();
-        },
-        add:function(){
-            $("#userEditPage").html('');
-            $("#userEditPage").load('<c:url value="/user/add" />');
-            $("#userEditPage").modal('show');
-        },
-        edit:function(id){
-            $("#userEditPage").html('');
-            $("#userEditPage").load('<c:url value="/user/edit/" />'+id);
-            $("#userEditPage").modal('show');
-        },
-        del: function(id) {
-            var listPage = this;
-            $.rap.dialog.confirm('确认','确定要删除记录吗?',function(){
-                $.ajax({
-                    cache: false,
-                    type: "POST",
-                    url: '<c:url value="/user/delete/"/>'+id,
-                    async: false,
-                    success: function (data) {
-                        listPage.grid.ajax.reload(null,false);
-                    }
-                });
-            });
+            }
         }
-    };
-    userListPage.init();
+    })
 
 </script>
 <c:if test="${!isAjaxRequest}">

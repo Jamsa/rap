@@ -70,7 +70,7 @@ public abstract class BaseEntityController<T extends BaseEntity<P>,P extends Ser
         return this.getService().update(record);
     }
 
-    @RequestMapping(value = "/delete/{id}",method = RequestMethod.POST)
+    @RequestMapping(value = "/del/{id}",method = RequestMethod.POST)
     public @ResponseBody int deleteByPrimaryKey(@PathVariable("id") P id){
         return this.getService().deleteByPrimaryKey(id);
     }
