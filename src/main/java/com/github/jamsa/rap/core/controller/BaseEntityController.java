@@ -40,7 +40,7 @@ public abstract class BaseEntityController<T extends BaseEntity<P>,P extends Ser
         return this.getViewDir()+"/edit";
     }
 
-    @RequestMapping(value = "/list",method = RequestMethod.GET)
+    @RequestMapping(value = "/list",method = {RequestMethod.GET,RequestMethod.POST})
     public @ResponseBody
     PageInfo<T> list(T condition, PageInfo<T> page){
         if(page.getPageSize()==0){

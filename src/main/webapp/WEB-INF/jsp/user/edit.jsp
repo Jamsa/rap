@@ -56,7 +56,7 @@
                 </div>
                 <div class="modal-footer">
                     <c:if test="${isAjaxRequest}">
-                    <button type="button" class="btn btn-default pull-left" data-dismiss="modal">取消</button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal">取消</button>
                     </c:if>
                     <button type="button" class="btn btn-primary" onclick="userEditPage.save();">保存</button>
                 </div>

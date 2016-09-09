@@ -27,19 +27,34 @@
 <!-- Main content -->
 <section class="content">
 
-    <div class="row">
-        <div class="col-sm-12">
             <div class="box">
                 <div class="box-header">
+                    <div class="form-group row">
+                        <div class="col-sm-2"></div>
+                        <form class="form-horizontal" id="userQueryForm">
+                        <label for="queryUsername" class="control-label col-sm-1">用户名</label>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" id="queryUsername" name="username">
+                        </div>
+                        <label for="queryFullname" class="control-label col-sm-1">姓名</label>
+                        <div class="col-sm-2">
+                            <input type="text" class="form-control" id="queryFullname" name="fullname">
+                        </div>
+                        </form>
+                        <div class="col-sm-2">
+                            <button class="btn btn-primary" onclick="userListPage.query();">查询</button>
+                            <button class="btn btn-default" onclick="userListPage.resetCondition();">重置</button>
+                        </div>
+                        <div class="col-sm-2"></div>
+                    </div>
 
+                    <div class="row">
+                        <button class="btn btn-primary col-sm-offset-11" onclick="userListPage.add();">新建</button>
+                    </div>
                 </div>
                 <!-- /.box-header -->
                 <div class="box-body">
-                    <div class="row">
-                        <div class="col-sm-offset-11">
-                            <button class="btn btn-primary" onclick="userListPage.add();">新建</button>
-                        </div>
-                    </div>
+
                     <table id="userTable" width="100%" class="table table-bordered table-hover">
                         <thead>
                         <tr>

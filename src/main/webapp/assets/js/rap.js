@@ -370,6 +370,22 @@
             $.rap.dialog.error("出错", errorThrown);
         }
     });
+
+    $.fn.serializeObject = function(){
+        var o = {};
+        var a = this.serializeArray();
+        $.each(a, function() {
+            if (o[this.name] !== undefined) {
+                if (!o[this.name].push) {
+                    o[this.name] = [o[this.name]];
+                }
+                o[this.name].push(this.value || '');
+            } else {
+                o[this.name] = this.value || '';
+            }
+        });
+        return o;
+    };
 })(jQuery);
 
 
@@ -434,14 +450,27 @@
             ajax: function (data, callback, settings) {
                 //封装请求参数
                 var param = $.fn.RapGrid.getGridParam(data);
+
+                var queryForm = $('#'+opts.listOptions.queryFormId);
+                if (queryForm.valid && typeof queryForm.valid === 'function' && queryForm.valid() === false){
+                    return;
+                } else{
+                    var formData = queryForm.serializeObject();
+                    $.each(formData,function(idx,value){
+                        if(value===undefined || value===''){
+                            delete formData[idx];
+                        }
+                    });
+                    param = $.extend(param,formData);
+                }
+
                 var cbResult = $this.options.listOptions.onList(data);
                 if (cbResult === false) {
                     console.log('Rap listpage.grid.ajax onList回调中止了查询操作。');
                     return;
                 }
-
                 $.ajax({
-                    type: "GET",
+                    type: "POST",
                     url: $this.options.listOptions.url,
                     cache: false,  //禁用缓存
                     data: param,  //传入组装的参数
@@ -507,9 +536,20 @@
 
     RapListPage.prototype = {
         query: function (listOpts) {
+
             this.grid.ajax.reload();
         },
-
+        resetCondition:function(protectFields){
+            var prot = protectFields?protectFields:{};
+            $('#'+this.options.listOptions.queryFormId +' :input').each(function(){
+                var ele = $(this);
+                if($.inArray(ele.attr('name'),prot)>=0){
+                    return;
+                }else{
+                    ele.val('');
+                }
+            });
+        },
         add: function (addOpts) {
             var $this = this;
             var opts = $.extend({}, $this.options.addOptions, addOpts ? addOpts : {});
