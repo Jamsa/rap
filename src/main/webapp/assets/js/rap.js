@@ -599,7 +599,7 @@
                         var cbResult = opts.onDelSuccess(data);
                         if (cbResult === false) return;
 
-                        $this.query();
+                        $this.grid.ajax.reload(null, false);
                     }
                 });
             });
@@ -649,8 +649,10 @@
         }, options ? options : {});
 
         var modulePath = $.rap.global.contextPath + '/' + opts.modelName;
+
         if (!opts.saveOptions.url) {
-            opts.saveOptions.url = modulePath + (opts.isAdd === true ? '/save' : '/update');
+            //opts.saveOptions.url = modulePath + (opts.isAdd === true ? '/save' : '/update');
+            opts.saveOptions.url = modulePath + '/save';
         }
 
         //if(!opts.editFormId) opts.editFormId=opts.modelName+'EditForm';

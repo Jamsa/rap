@@ -61,15 +61,19 @@ public abstract class BaseEntityController<T extends BaseEntity<P>,P extends Ser
     }
 
     @RequestMapping(value = "/save",method = RequestMethod.POST)
-    public @ResponseBody T save(T record){
-        return this.getService().save(record);
+    public @ResponseBody T save(T record,boolean isAdd){
+        if(isAdd) {
+            return this.getService().save(record);
+        }else{
+            return this.getService().update(record);
+        }
     }
-
+    /*
     @RequestMapping(value = "/update",method = RequestMethod.POST)
     public @ResponseBody T update(T record){
         return this.getService().update(record);
     }
-
+    */
     @RequestMapping(value = "/del/{id}",method = RequestMethod.POST)
     public @ResponseBody int deleteByPrimaryKey(@PathVariable("id") P id){
         return this.getService().deleteByPrimaryKey(id);

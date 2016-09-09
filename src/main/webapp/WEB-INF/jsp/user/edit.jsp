@@ -23,7 +23,8 @@
                 </div>
                 <div class="modal-body">
                     <form name="userEditForm" id="userEditForm" action="<c:url value="/user/save"/>">
-                        <input type="hidden" name="userId" name="userId" value="<c:out value="${record.userId}"/>" />
+                        <input type="hidden" name="isAdd"  value="<c:out value="${isAdd}"/>" />
+                        <input type="hidden" name="userId" value="<c:out value="${record.userId}"/>" />
                         <div class="row">
                             <div class="form-group col-sm-6">
                                 <label for="username">用户名</label>
