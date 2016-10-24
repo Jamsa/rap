@@ -220,10 +220,10 @@
     });
 })(jQuery);
 
-/* RapGrid组件 */
+/* RapTable组件 */
 (function ($) {
 
-    $.fn.RapGrid = function (options) {
+    $.fn.RapTable = function (options) {
         var opts = $.extend({
             language: {
                 "sProcessing": "处理中...",
@@ -268,7 +268,7 @@
             }],
             ajax: function (data, callback, settings) {
                 //封装请求参数
-                var param = $.fn.RapGrid.getGridParam(data);
+                var param = $.fn.RapTable.getGridParam(data);
                 $.ajax({
                     type: "GET",
                     url: "/hello/list",
@@ -276,7 +276,7 @@
                     data: param,  //传入组装的参数
                     dataType: "json",
                     success: function (result) {
-                        var cbData = $.fn.RapGrid.getGridData(data, result);
+                        var cbData = $.fn.RapTable.getGridData(data, result);
                         callback(cbData);
                     }
                 });
@@ -292,7 +292,7 @@
         return result;
     };
 
-    $.fn.RapGrid.getGridData = function (data, result) {
+    $.fn.RapTable.getGridData = function (data, result) {
         var returnData = {};
         returnData.draw = data.draw;//这里直接自行返回了draw计数器,应该由后台返回
         returnData.recordsTotal = result.total;//返回数据全部记录
@@ -301,7 +301,7 @@
         return returnData;
     };
 
-    $.fn.RapGrid.getGridParam = function (data) {
+    $.fn.RapTable.getGridParam = function (data) {
         var param = data ? data : {};
         param.pageSize = data.length;//页面显示记录条数，在页面显示每页显示多少项的时候
         param.startRow = data.start;//开始的记录序号
@@ -449,7 +449,7 @@
         opts.listOptions.gridOptions = $.extend({
             ajax: function (data, callback, settings) {
                 //封装请求参数
-                var param = $.fn.RapGrid.getGridParam(data);
+                var param = $.fn.RapTable.getGridParam(data);
 
                 var queryForm = $('#'+opts.listOptions.queryFormId);
                 if (queryForm.valid && typeof queryForm.valid === 'function' && queryForm.valid() === false){
@@ -476,7 +476,7 @@
                     data: param,  //传入组装的参数
                     dataType: "json",
                     success: function (result) {
-                        var cbData = $.fn.RapGrid.getGridData(data, result);
+                        var cbData = $.fn.RapTable.getGridData(data, result);
                         var cbResult = $this.options.listOptions.onListSuccess(cbData);
                         if (cbResult === false) return;
 
@@ -507,7 +507,7 @@
         //属性处理结束
 
         //初始化grid
-        $this.grid = $($this.element).RapGrid($this.options.listOptions.gridOptions);
+        $this.dataTable = $($this.element).RapTable($this.options.listOptions.gridOptions);
 
         //事件绑定处理
         var editElementSelector = '#' + $this.options.editElementId;
@@ -519,14 +519,14 @@
                 $this.edit(data[$this.options.keyAttrName]);
             }
             $(editElementSelector).modal('hide');
-            $this.grid.ajax.reload(null, false);
+            $this.dataTable.ajax.reload(null, false);
         });
         $(editElementSelector).on('rap:' + $this.options.modelName + ':updated', function (evt, data) {
             var cbResult = $this.options.messages.onRecordUpdated(data);
             if (cbResult === false) return;
 
             $(editElementSelector).modal('hide');
-            $this.grid.ajax.reload(null, false);
+            $this.dataTable.ajax.reload(null, false);
         });
         $(editElementSelector).on('rap:' + $this.options.modelName + ':delete', function (evt, data) {
             $this.del(data);
@@ -599,7 +599,7 @@
                         var cbResult = opts.onDelSuccess(data);
                         if (cbResult === false) return;
 
-                        $this.grid.ajax.reload(null, false);
+                        $this.dataTable.ajax.reload(null, false);
                     }
                 });
             });

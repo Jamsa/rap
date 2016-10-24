@@ -1,3 +1,4 @@
+import com.github.jamsa.rap.gradle.MybatisGenerate
 group 'com.github.jamsa'
 version '1.0-SNAPSHOT'
 
@@ -9,10 +10,11 @@ apply plugin: 'jetty'
 sourceCompatibility = 1.6
 targetCompatibility = 1.6
 
+
 repositories {
     mavenLocal()
+    maven{ url 'http://maven.aliyun.com/nexus/content/groups/public/'}
     mavenCentral()
-    //maven{ url 'http://maven.ibiblio.org/maven2/'}
 }
 
 configurations {
@@ -46,16 +48,10 @@ dependencies {
     compile ('com.fasterxml.jackson.core:jackson-databind:2.7.4')
     //compile ('org.apache.velocity:velocity:1.7')
     //compile files('./lib/ojdbc14-10.2.0.3.0.jar')
-    //testCompile files('./lib/mybatis-generator-core-1.3.3.jar')
     testCompile ('org.springframework:spring-test:4.1.6.RELEASE')
     testCompile ('junit:junit:4.11')
 
-    compile ('org.mybatis.generator:mybatis-generator-core:1.3.3')
-
-    mybatisGenerator 'org.mybatis.generator:mybatis-generator-core:1.3.3'
     mybatisGenerator 'mysql:mysql-connector-java:5.1.38'
-    mybatisGenerator files('./build/classes/main')
-    //mybatisGenerator 'tk.mybatis:mapper:3.3.2'
 }
 
 jettyRun{
@@ -68,55 +64,10 @@ jettyRunWar{
     httpPort = 7000
 }
 
-def getDbProperties = {
-    def properties = new Properties()
-    file("src/main/resources/config.properties").withInputStream { inputStream ->
-        properties.load(inputStream)
-    }
-
-    properties;
-
+task mybatisGenerate(type:MybatisGenerate){
+    dbConfigFile = "src/main/resources/config.properties"
+    generateConfigFile='src/main/resources/generator-config.xml'
+    modelPackage="com.github.jamsa.rap.tmp"
+    sqlMapperPackage=modelPackage
+    mapperPackage=sqlMapperPackage
 }
-
-
-task mybatisGenerate << {
-    def properties = getDbProperties()
-
-    ant.properties['targetProject'] = projectDir.path
-    ant.properties['driverClass'] = properties.getProperty("jdbc.driver")
-    ant.properties['connectionURL'] = properties.getProperty("jdbc.url")
-    ant.properties['username'] = properties.getProperty("jdbc.username")
-    ant.properties['password'] = properties.getProperty("jdbc.password")
-    ant.properties['src_main_java'] = sourceSets.main.java.srcDirs[0].path
-    ant.properties['src_main_resources'] = sourceSets.main.resources.srcDirs[0].path
-    ant.properties['modelPackage'] = this.modelPackage
-    ant.properties['mapperPackage'] = this.mapperPackage
-    ant.properties['sqlMapperPackage'] = this.sqlMapperPackage
-
-    ant.taskdef(
-            name: 'mbgenerator',
-            classname: 'org.mybatis.generator.ant.GeneratorAntTask',
-            classpath: configurations.mybatisGenerator.asPath
-    )
-
-    ant.mbgenerator(
-            overwrite: true,
-            configfile: 'src/main/resources/generator-config.xml',
-            verbose: true) {
-        propertyset {
-            propertyref(name: 'targetProject')
-            propertyref(name: 'username')
-            propertyref(name: 'driverClass')
-            propertyref(name: 'connectionURL')
-            propertyref(name: 'password')
-            propertyref(name: 'src_main_java')
-            propertyref(name: 'src_main_resources')
-            propertyref(name: 'modelPackage')
-            propertyref(name: 'mapperPackage')
-            propertyref(name: 'sqlMapperPackage')
-
-        }
-    }
-}
-
-//mybatisGenerate.dependsOn compileJava
