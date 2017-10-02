@@ -367,6 +367,10 @@
         },
         error: function (xhr, status, errorThrown) {
             //console.log('##'+status);
+            if(xhr.status=='0'){
+                $.rap.dialog.error("出错", '网络连接中断,无法发送请求!');
+                return;
+            }
             $.rap.dialog.error("出错", errorThrown);
         }
     });

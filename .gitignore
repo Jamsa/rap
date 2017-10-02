@@ -4,6 +4,6 @@
 out
 build
 support/docker/mysql
-.pdb
-.cdb
+*.pdb
+*.cdb
 
