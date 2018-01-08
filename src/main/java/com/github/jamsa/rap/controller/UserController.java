@@ -8,12 +8,13 @@ import com.github.jamsa.rap.core.controller.BaseEntityController;
 import com.github.jamsa.rap.core.service.BaseEntityService;
 import com.github.jamsa.rap.model.User;
 import com.github.jamsa.rap.service.UserService;
+import org.springframework.web.bind.annotation.RestController;
 
 
 /**
  * Created by zhujie on 16/7/5.
  */
-@Controller
+@RestController
 @RequestMapping("/user")
 public class UserController extends BaseEntityController<User,Integer> {
     @Autowired
@@ -24,8 +25,4 @@ public class UserController extends BaseEntityController<User,Integer> {
         return userService;
     }
 
-    @Override
-    public String getViewDir() {
-        return "user";
-    }
 }

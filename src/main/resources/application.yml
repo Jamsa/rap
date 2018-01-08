@@ -14,6 +14,7 @@ spring:
 
 server:
   port: 9000
+  context-path: /rap
 
 mybatis:
   type-aliases-package: com.github.jamsa.rap.model

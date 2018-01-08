@@ -11,8 +11,4 @@ import javax.servlet.http.HttpServletRequest;
 public class BaseController {
     protected Logger logger  = LoggerFactory.getLogger(this.getClass());
 
-    protected boolean isAjaxRequest(HttpServletRequest request){
-        String header = request.getHeader("X-Requested-With");
-        return "XMLHttpRequest".equals(header);
-    }
 }
