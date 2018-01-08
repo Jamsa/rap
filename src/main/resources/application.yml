@@ -1,0 +1,45 @@
+spring:
+  application:
+    name: rap
+  datasource:
+    name: rap
+    url: jdbc:mysql://localhost:3306/rap?characterEncoding=UTF-8
+    username: rap
+    password: rap
+    driver-class-name: com.mysql.jdbc.Driver
+    type: com.zaxxer.hikari.HikariDataSource
+    hikari:
+      connection-timeout: 60000
+      maximum-pool-size: 5
+
+server:
+  port: 9000
+
+mybatis:
+  type-aliases-package: com.github.jamsa.rap.model
+  #type-handlers-package: com.example.typehandler
+  configuration:
+    map-underscore-to-camel-case: true
+    default-fetch-size: 100
+    default-statement-timeout: 30
+  #config-location: classpath:mybatis-config.xml
+  check-config-location: true
+  mapper-locations: classpath:com/github/jamsa/rap/mapper/*Mapper.xml
+
+logging:
+  pattern:
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
+  level:
+    root: info
+    com.github.jamsa.rap.mapper: debug
+    org.springframework: warn
+
+pagehelper:
+  #dialect: mysql
+  offset-as-page-num: true
+  row-bounds-with-count: true
+  page-size-zero: true
+  reasonable: false
+  params: pageNum=pageHelperStart;pageSize=pageHelperRows;
+  support-methods-arguments: false
+

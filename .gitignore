@@ -6,4 +6,4 @@ build
 support/docker/mysql
 *.pdb
 *.cdb
-
+*.iml
