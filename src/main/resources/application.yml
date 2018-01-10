@@ -44,3 +44,10 @@ pagehelper:
   params: pageNum=pageHelperStart;pageSize=pageHelperRows;
   support-methods-arguments: false
 
+jwt:
+  token:
+    secret: mySecret
+#    7天
+#    expiration: 604800
+#    一天
+    expiration: 86400

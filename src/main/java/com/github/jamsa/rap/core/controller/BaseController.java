@@ -3,7 +3,6 @@ package com.github.jamsa.rap.core.controller;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * Created by zhujie on 16/8/24.
