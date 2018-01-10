@@ -18,6 +18,7 @@ import org.apache.shiro.spring.web.ShiroFilterFactoryBean;
 import org.apache.shiro.web.mgt.DefaultWebSecurityManager;
 import org.apache.shiro.web.mgt.DefaultWebSubjectFactory;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -33,6 +34,9 @@ import java.util.Map;
  */
 @Configuration
 public class ShiroConfig {
+
+    @Autowired
+    private CacheManager cacheManager;
 
     /**
      * 自定义Realm
@@ -120,6 +124,7 @@ public class ShiroConfig {
 
         // 用户授权/认证信息Cache, 后期可采用EhCache缓存
         // securityManager.setCacheManager(cacheManager());
+        securityManager.setCacheManager(cacheManager);
 
         SecurityUtils.setSecurityManager(securityManager);
         return securityManager;
@@ -139,13 +144,13 @@ public class ShiroConfig {
     /**
      * 用户授权信息缓存
      * @return
-     */
+     *
     @Bean
     public CacheManager cacheManager() {
         // EhCacheManager cacheManager = new EhCacheManager();
         // cacheManager.setCacheManagerConfigFile("classpath:ehcache.xml");
         return new MemoryConstrainedCacheManager();
-    }
+    }*/
 
     /**
      * 凭证匹配器

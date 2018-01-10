@@ -10,6 +10,7 @@ import org.apache.shiro.authz.SimpleAuthorizationInfo;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.util.StringUtils;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -53,6 +54,9 @@ public class JwtRealm extends AuthorizingRealm {
         JwtToken jwtToken = (JwtToken)token;
 
         String tokenStr = jwtToken.getToken();
+        if(StringUtils.isEmpty(tokenStr)){
+            throw new AuthenticationException("未认证用户，访问被拒绝！");
+        }
 
         String username = tokenUtil.getUsernameFromToken(tokenStr);
 

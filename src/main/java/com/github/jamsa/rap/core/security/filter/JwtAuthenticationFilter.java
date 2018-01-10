@@ -1,6 +1,8 @@
 package com.github.jamsa.rap.core.security.filter;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.github.jamsa.rap.core.security.jwt.JwtToken;
+import com.github.jamsa.rap.model.ResponseData;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.subject.Subject;
@@ -11,6 +13,8 @@ import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 
 /**
  * Created by zhujie on 2018/1/9.
@@ -19,9 +23,7 @@ public class JwtAuthenticationFilter extends AuthenticatingFilter {
 
     private static final String TOKEN = "token";
 
-    @Override
-    protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
-        HttpServletRequest httpRequest = (HttpServletRequest) request;
+    private String getToken(HttpServletRequest httpRequest){
         // 先从Header里面获取
         String token = httpRequest.getHeader(TOKEN);
         if(StringUtils.isEmpty(token)){
@@ -40,10 +42,17 @@ public class JwtAuthenticationFilter extends AuthenticatingFilter {
                 }
             }
         }
+        return token;
+    }
+
+    @Override
+    protected AuthenticationToken createToken(ServletRequest request, ServletResponse response) throws Exception {
+        HttpServletRequest httpRequest = (HttpServletRequest) request;
         JwtToken jwtToken = new JwtToken();
-        jwtToken.setToken(token);
+        jwtToken.setToken(getToken(httpRequest));
         return jwtToken;
     }
+
 
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
@@ -53,6 +62,8 @@ public class JwtAuthenticationFilter extends AuthenticatingFilter {
     @Override
     protected boolean onAccessDenied(ServletRequest request, ServletResponse response) throws Exception {
         return executeLogin(request, response);
+        //return true;
+        //return false;
     }
 
     @Override
@@ -64,19 +75,17 @@ public class JwtAuthenticationFilter extends AuthenticatingFilter {
     @Override
     protected boolean onLoginFailure(AuthenticationToken token, AuthenticationException ae, ServletRequest request,
                                      ServletResponse response) {
-        /*HttpServletResponse servletResponse = (HttpServletResponse) response;
-        JSONObject jsonObject = new JSONObject();
-        jsonObject.put("code", HttpServletResponse.SC_UNAUTHORIZED);
-        jsonObject.put("msg","登录失败，无权访问");
-        jsonObject.put("timestamp", System.currentTimeMillis());
+        HttpServletResponse servletResponse = (HttpServletResponse) response;
+        ((HttpServletResponse) response).setStatus(HttpServletResponse.SC_UNAUTHORIZED);
         try {
             servletResponse.setCharacterEncoding("UTF-8");
             servletResponse.setContentType("application/json;charset=UTF-8");
             servletResponse.setHeader("Access-Control-Allow-Origin","*");
-            ObjectMapper objectMapper = new ObjectMapper();
-            response.getWriter().write(objectMapper.writeValueAsString(jsonObject));
+            ObjectMapper mapper = new ObjectMapper();
+            mapper.writeValue(response.getWriter(), ResponseData.error(ae.getMessage()));
         } catch (IOException e) {
-        }*/
+
+        }
         return false;
     }
 }
