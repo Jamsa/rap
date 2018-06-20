@@ -3,7 +3,9 @@ package com.github.jamsa.rap.model;
 import com.github.jamsa.rap.core.model.BaseEntity;
 import org.hibernate.validator.constraints.NotBlank;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class User extends BaseEntity<Integer> {
     /**
@@ -388,5 +390,15 @@ public class User extends BaseEntity<Integer> {
 
     public void setPrimaryKey(Integer pkValue) {
         this.setUserId(pkValue);
+    }
+
+    public List<Role> roles = new ArrayList<>();
+
+    public List<Role> getRoles() {
+        return roles;
+    }
+
+    public void setRoles(List<Role> roles) {
+        this.roles = roles;
     }
 }
