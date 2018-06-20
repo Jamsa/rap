@@ -16,6 +16,8 @@ apply plugin: 'java'
 //apply plugin: 'war'
 //apply plugin: 'jetty'
 //apply plugin: 'idea'
+apply plugin: 'application'
+mainClassName = 'com.github.jamsa.rap.Application'
 
 apply plugin: 'org.springframework.boot'
 

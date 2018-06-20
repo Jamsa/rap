@@ -57,6 +57,7 @@ public class JwtAuthenticationFilter extends AuthenticatingFilter {
     @Override
     protected boolean isAccessAllowed(ServletRequest request, ServletResponse response, Object mappedValue) {
         return false;
+        //return super.isAccessAllowed(request,response,mappedValue);
     }
 
     @Override

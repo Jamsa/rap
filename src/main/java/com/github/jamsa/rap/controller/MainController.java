@@ -22,6 +22,8 @@ import javax.servlet.http.Cookie;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * Created by zhujie on 16/7/4.
@@ -38,7 +40,7 @@ public class MainController {
 
 
     @PostMapping("/login")
-    public ResponseData login(@RequestBody LoginUser loginUser, HttpServletResponse response, Device device) throws IOException{
+    public ResponseEntity login(@RequestBody LoginUser loginUser, HttpServletResponse response, Device device) throws IOException{
         String username =loginUser.getUsername();
         String password = loginUser.getPassword();
 
@@ -58,19 +60,19 @@ public class MainController {
             subject.login(jwtToken);
         } catch (UnknownAccountException exception) {
             logger.error("账号不存在",exception);
-            responseData.setData("帐号不存在");
+            responseData.setMessage("帐号不存在");
         } catch (IncorrectCredentialsException exception) {
             logger.error("错误的凭证，用户名或密码不正确",exception);
-            responseData.setData("错误的凭证，用户名或密码不正确");
+            responseData.setMessage("错误的凭证，用户名或密码不正确");
         } catch (LockedAccountException exception) {
             logger.error("账户已锁定",exception);
-            responseData.setData("账户已锁定");
+            responseData.setMessage("账户已锁定");
         } catch (ExcessiveAttemptsException exception) {
             logger.error("错误次数过多",exception);
-            responseData.setData("错误次数过多");
+            responseData.setMessage("错误次数过多");
         } catch (AuthenticationException exception) {
             logger.error("认证失败",exception);
-            responseData.setData("认证失败");
+            responseData.setMessage("认证失败");
         }
 
         // 认证通过
@@ -83,7 +85,11 @@ public class MainController {
             response.addCookie(cookie);
             response.flushBuffer();
 
-            return ResponseData.success(token);
+            //return ResponseData.success(token);
+            Map result = new HashMap();
+            result.put("username",username);
+            result.put("token",token);
+            return ResponseEntity.ok(result);
             //return ResponseEntity.ok(responseData);
             //return responseData;
             /*
@@ -97,7 +103,8 @@ public class MainController {
             //ResponseData<String> responseData = new ResponseData<>();
             //responseData.setCode(403);
             //responseData.setMessage("error");
-            return responseData;
+            return ResponseEntity.badRequest().body(responseData);
+
             /*jsonObject.put("code",403);
             jsonObject.put("msg","error");
             jsonObject.put("timestamp", Calendar.getInstance().getTimeInMillis());
@@ -106,8 +113,10 @@ public class MainController {
     }
 
 
-    @GetMapping("/logout")
-    public ResponseData logout(HttpServletRequest request,HttpServletResponse response, Device device) throws IOException{
+    @PostMapping("/logout")
+    public ResponseEntity logout(HttpServletRequest request,HttpServletResponse response, Device device) throws IOException{
+
+        SecurityUtils.getSubject().logout();
         Cookie[] cookies = request.getCookies();
         for(int i=0;i<cookies.length;i++){
             Cookie cookie = cookies[i];
@@ -120,13 +129,13 @@ public class MainController {
                 break;
             }
         }
-        SecurityUtils.getSubject().logout();
 
-        return ResponseData.success("注销成功");
+        //return ResponseData.success("注销成功");
+        return ResponseEntity.ok().build();
     }
 
     @GetMapping("/token/refresh")
-    public ResponseData refreshToken(HttpServletRequest request,HttpServletResponse response, Device device) throws IOException{
+    public ResponseEntity refreshToken(HttpServletRequest request,HttpServletResponse response, Device device) {
         // 先从Header里面获取
         String token = request.getHeader("token");
         if(StringUtils.isEmpty(token)){
@@ -147,7 +156,8 @@ public class MainController {
         }
 
         token = tokenUtil.refreshToken(token);
-        return ResponseData.success(token);
+        //return ResponseData.success(token);
+        return ResponseEntity.ok(token);
     }
 
 }

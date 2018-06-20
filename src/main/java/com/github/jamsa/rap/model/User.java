@@ -1,6 +1,8 @@
 package com.github.jamsa.rap.model;
 
 import com.github.jamsa.rap.core.model.BaseEntity;
+import org.hibernate.validator.constraints.NotBlank;
+
 import java.util.Date;
 
 public class User extends BaseEntity<Integer> {
@@ -20,6 +22,7 @@ public class User extends BaseEntity<Integer> {
      *
      * @mbggenerated Thu Aug 25 14:35:40 CST 2016
      */
+    @NotBlank(message = "用户名不能为空")
     private String username;
 
     /**
@@ -38,6 +41,7 @@ public class User extends BaseEntity<Integer> {
      *
      * @mbggenerated Thu Aug 25 14:35:40 CST 2016
      */
+    @NotBlank(message = "姓名不能为空")
     private String fullname;
 
     /**
