@@ -10,6 +10,7 @@ import org.mybatis.generator.api.MyBatisGenerator
 import org.mybatis.generator.config.Configuration
 import org.mybatis.generator.config.xml.ConfigurationParser
 import org.mybatis.generator.internal.DefaultShellCallback
+import org.yaml.snakeyaml.Yaml
 
 /**
  * Created by zhujie on 16/10/21.
@@ -17,17 +18,31 @@ import org.mybatis.generator.internal.DefaultShellCallback
 class MybatisGenerate extends DefaultTask{
     private static Logger logger = Logging.getLogger(MybatisGenerate.class);
 
-    String dbConfigFile = "src/main/resources/config.properties"
+    //String dbConfigFile = "src/main/resources/config.properties"
+    String dbConfigFile = "src/main/resources/application.yml"
     String generateConfigFile='src/main/resources/generator-config.xml'
     String modelPackage = null
     String mapperPackage = null
     String sqlMapperPackage = null
     boolean overwrite = true
 
+    /*
     def getDbProperties() {
         Properties props = new Properties()
         project.file(dbConfigFile).withInputStream { inputStream ->
             props.load(inputStream)
+        }
+        props
+    }*/
+
+    def getDbProperties() {
+        Properties props = new Properties()
+        project.file(dbConfigFile).withInputStream { inputStream ->
+            def result = new Yaml().load(inputStream)
+            props.put("jdbc.driver",result.spring.datasource."driver-class-name")
+            props.put("jdbc.url",result.spring.datasource.url)
+            props.put("jdbc.username",result.spring.datasource.username)
+            props.put("jdbc.password",result.spring.datasource.password)
         }
         props
     }

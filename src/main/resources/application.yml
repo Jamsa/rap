@@ -32,8 +32,13 @@ logging:
     console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"
   level:
     root: info
-    com.github.jamsa.rap.mapper: debug
-    org.springframework: warn
+    com:
+      github:
+        jamsa:
+          rap:
+            mapper: debug
+    org:
+      springframework: info
 
 pagehelper:
   #dialect: mysql
@@ -47,7 +52,5 @@ pagehelper:
 jwt:
   token:
     secret: mySecret
-#    7天
-#    expiration: 604800
-#    一天
-    expiration: 86400
+    expiration: 86400 #一天
+

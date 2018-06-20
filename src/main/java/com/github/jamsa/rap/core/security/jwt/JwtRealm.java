@@ -19,8 +19,12 @@ import java.util.Set;
  * Created by zhujie on 2018/1/9.
  */
 public class JwtRealm extends AuthorizingRealm {
-    @Autowired
+
     private TokenUtil tokenUtil;
+
+    public JwtRealm(TokenUtil tokenUtil) {
+        this.tokenUtil = tokenUtil;
+    }
 
     @Override
     public boolean supports(AuthenticationToken token) {

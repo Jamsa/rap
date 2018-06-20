@@ -193,6 +193,7 @@ public class MyBatisGeneratorPlugin extends PluginAdapter {
     @Override
     public List<GeneratedJavaFile> contextGenerateAdditionalJavaFiles(IntrospectedTable introspectedTable) {
 
+        GeneratedJavaFile f = new GeneratedJavaFile()
         return super.contextGenerateAdditionalJavaFiles(introspectedTable);
     }
 

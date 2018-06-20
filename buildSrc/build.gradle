@@ -11,5 +11,6 @@ repositories {
 
 dependencies {
     compile ('org.mybatis.generator:mybatis-generator-core:1.3.3')
+    compile ('org.yaml:snakeyaml:1.21')
     //compile ("mysql:mysql-connector-java:5.1.38")
 }

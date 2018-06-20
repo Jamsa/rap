@@ -17,6 +17,7 @@
         </table>
         -->
 
+        <!--
         <table domainObjectName="User" tableName="RAP_USER" enableCountByExample="false"
                enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
             <generatedKey column="USER_ID" sqlStatement="Mysql" identity="true" />
@@ -25,6 +26,7 @@
                enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
             <generatedKey column="ROLE_ID" sqlStatement="Mysql" identity="true" />
         </table>
+        -->
         <table domainObjectName="Resource" tableName="RAP_RESOURCE" enableCountByExample="false"
                enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
             <generatedKey column="RESOURCE_ID" sqlStatement="Mysql" identity="true" />

@@ -39,6 +39,7 @@ configurations {
     mybatisGenerator
 }
 
+//防止mapper文件不被复制
 sourceSets.main.resources{
     srcDirs 'src/main/java','resources'
     include '**/*.xml','**/*.properties','**/*.yml'
@@ -66,7 +67,7 @@ dependencies {
 }
 
 task mybatisGenerate(type:MybatisGenerate){
-    dbConfigFile = "src/main/resources/config.properties"
+    dbConfigFile = "src/main/resources/application.yml"
     generateConfigFile='src/main/resources/generator-config.xml'
     modelPackage="com.github.jamsa.rap.tmp"
     sqlMapperPackage=modelPackage

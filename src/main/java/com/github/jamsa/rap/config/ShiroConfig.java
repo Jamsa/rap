@@ -3,6 +3,7 @@ package com.github.jamsa.rap.config;
 import com.github.jamsa.rap.core.security.filter.JwtAuthenticationFilter;
 import com.github.jamsa.rap.core.security.jwt.JwtRealm;
 import com.github.jamsa.rap.core.security.StatelessDefaultSubjectFactory;
+import com.github.jamsa.rap.core.util.TokenUtil;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.CredentialsMatcher;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
@@ -35,8 +36,6 @@ import java.util.Map;
 @Configuration
 public class ShiroConfig {
 
-    @Autowired
-    private CacheManager cacheManager;
 
     /**
      * 自定义Realm
@@ -44,8 +43,8 @@ public class ShiroConfig {
      */
     @Bean(name = "jwtRealm")
     @DependsOn("lifecycleBeanPostProcessor")
-    public JwtRealm jwtRealm() {
-        JwtRealm jwtRealm = new JwtRealm();
+    public JwtRealm jwtRealm(TokenUtil tokenUtil) {
+        JwtRealm jwtRealm = new JwtRealm(tokenUtil);
         // jwtRealm.setCredentialsMatcher(credentialsMatcher());
         jwtRealm.setCachingEnabled(false);
         return jwtRealm;
@@ -110,10 +109,10 @@ public class ShiroConfig {
      * @return
      */
     @Bean("securityManager")
-    public DefaultWebSecurityManager securityManager(){
+    public DefaultWebSecurityManager securityManager(JwtRealm jwtRealm){
         DefaultWebSecurityManager securityManager =  new DefaultWebSecurityManager();
 
-        securityManager.setRealm(jwtRealm());
+        securityManager.setRealm(jwtRealm);
 
         // 替换默认的DefaultSubjectFactory，用于关闭session功能
         securityManager.setSubjectFactory(subjectFactory());
@@ -123,8 +122,7 @@ public class ShiroConfig {
         ((DefaultSessionStorageEvaluator) ((DefaultSubjectDAO)securityManager.getSubjectDAO()).getSessionStorageEvaluator()).setSessionStorageEnabled(false);
 
         // 用户授权/认证信息Cache, 后期可采用EhCache缓存
-        // securityManager.setCacheManager(cacheManager());
-        securityManager.setCacheManager(cacheManager);
+        securityManager.setCacheManager(cacheManager());
 
         SecurityUtils.setSecurityManager(securityManager);
         return securityManager;
@@ -144,13 +142,13 @@ public class ShiroConfig {
     /**
      * 用户授权信息缓存
      * @return
-     *
-    @Bean
+     */
+    //@Bean
     public CacheManager cacheManager() {
         // EhCacheManager cacheManager = new EhCacheManager();
         // cacheManager.setCacheManagerConfigFile("classpath:ehcache.xml");
         return new MemoryConstrainedCacheManager();
-    }*/
+    }
 
     /**
      * 凭证匹配器
@@ -191,9 +189,9 @@ public class ShiroConfig {
      * @return
      */
     @Bean
-    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(){
+    public AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor(DefaultWebSecurityManager securityManager){
         AuthorizationAttributeSourceAdvisor authorizationAttributeSourceAdvisor = new AuthorizationAttributeSourceAdvisor();
-        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager());
+        authorizationAttributeSourceAdvisor.setSecurityManager(securityManager);
         return authorizationAttributeSourceAdvisor;
     }
 }
