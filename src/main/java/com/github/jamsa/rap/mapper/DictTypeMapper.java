@@ -2,7 +2,10 @@ package com.github.jamsa.rap.mapper;
 
 import com.github.jamsa.rap.core.mapper.BaseMapper;
 import com.github.jamsa.rap.model.DictType;
+import com.github.jamsa.rap.model.DictValue;
+import com.github.jamsa.rap.model.Role;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -58,4 +61,8 @@ public interface DictTypeMapper extends BaseMapper<DictType, Integer> {
 
     /** @mbggenerated */
     List<DictType> selectByCondition(DictType condition);
+
+    void deleteTypeAllValues(@Param("typeId") Integer typeId);
+
+    void insertTypeValues(@Param("typeId") Integer typeId,@Param("values") List<DictValue> values);
 }

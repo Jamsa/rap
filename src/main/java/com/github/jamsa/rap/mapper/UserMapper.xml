@@ -251,7 +251,7 @@
   </select>
 
   <!--查询用户角色-->
-  <select id="selectUserRoles" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+  <select id="selectUserRoles" parameterType="java.lang.Integer" resultMap="com.github.jamsa.rap.mapper.RoleMapper.BaseResultMap">
     select r.* from RAP_USER_ROLE ur,RAP_ROLE r where ur.USER_ID=#{userId} and ur.ROLE_ID=r.ROLE_ID
   </select>
 
@@ -269,7 +269,7 @@
   </insert>
 
   <!--明细查询-->
-  <resultMap id="DetailResultMap" type="com.github.jamsa.rap.model.User" extends="com.github.jamsa.rap.mapper.RoleMapper.BaseResultMap">
+  <resultMap id="DetailResultMap" type="com.github.jamsa.rap.model.User" extends="BaseResultMap">
     <collection property="roles" column="USER_ID" javaType="ArrayList" ofType="com.github.jamsa.rap.model.Role" select="selectUserRoles" >
     </collection>
   </resultMap>

@@ -1,7 +1,10 @@
 package com.github.jamsa.rap.model;
 
 import com.github.jamsa.rap.core.model.BaseEntity;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class DictType extends BaseEntity<Integer> {
     /**
@@ -282,5 +285,15 @@ public class DictType extends BaseEntity<Integer> {
 
     public void setPrimaryKey(Integer pkValue) {
         this.setDictTypeId(pkValue);
+    }
+
+    private List<DictValue> values = new ArrayList<>();
+
+    public List<DictValue> getValues() {
+        return values;
+    }
+
+    public void setValues(List<DictValue> values) {
+        this.values = values;
     }
 }
