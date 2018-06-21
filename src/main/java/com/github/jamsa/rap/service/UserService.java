@@ -22,4 +22,24 @@ public class UserService extends BaseEntityService<User,Integer> {
         return this.userMapper;
     }
 
+    public int deleteByPrimaryKey(Integer id){
+        userMapper.deleteUserAllRoles(id);
+        return this.getMapper().deleteByPrimaryKey(id);
+    }
+
+    public User save(User record){
+        //保存主表
+        this.getMapper().insert(record);
+        if(!record.getRoles().isEmpty())
+            userMapper.insertUserRoles(record.getUserId(),record.roles);
+        return record;
+    }
+
+    public User update(User record){
+        this.getMapper().updateByPrimaryKeySelective(record);
+        userMapper.deleteUserAllRoles(record.getUserId());
+        if(!record.getRoles().isEmpty())
+            userMapper.insertUserRoles(record.getUserId(),record.getRoles());
+        return record;
+    }
 }

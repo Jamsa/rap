@@ -199,4 +199,35 @@
       </if>
     </trim>
   </select>
+
+  <!--查询角色资源-->
+  <select id="selectRoleResources" parameterType="java.lang.Integer" resultMap="com.github.jamsa.rap.mapper.ResourceMapper.BaseResultMap">
+    select r.* from RAP_ROLE_RESOURCE rr,RAP_RESOURCE r where rr.ROLE_ID=#{roled} and rr.RESOURCE_ID=r.RESOURCE_ID
+  </select>
+
+  <!--在删除角色时，删除角色与用户的关联-->
+  <delete id="deleteUserRoles" parameterType="java.lang.Integer">
+    delete from RAP_USER_ROLE where ROLE_ID = #{roleId,jdbcType=INTEGER}
+  </delete>
+
+  <!--删除角色所有资源-->
+  <delete id="deleteRoleAllResources" parameterType="java.lang.Integer">
+    delete from RAP_ROLE_RESOURCE where ROLE_ID = #{roleId,jdbcType=INTEGER}
+  </delete>
+
+  <!--删除角色部分资源-->
+  <delete id="deleteRoleResources">
+    delete from RAP_ROLE_RESOURCE where ROLE_ID = #{roleId,jdbcType=INTEGER} and RESOURCE_ID in
+    <foreach collection="resourceIds" item="item" index="index" open="(" close=")" separator=",">
+      #{item}
+    </foreach>
+  </delete>
+
+  <!--插入角色资源-->
+  <insert id="insertRoleResources">
+    insert IGNORE into RAP_ROLE_RESOURCE(ROLE_ID,RESOURCE_ID) values
+    <foreach collection="resourceIds" item="item" index="index" separator=",">
+      (#{roleId},#{item})
+    </foreach>
+  </insert>
 </mapper>

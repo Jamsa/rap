@@ -30,17 +30,7 @@
     LAST_UPDATE_DATE, LAST_UPDATED_BY, MEMO
   </sql>
 
-  <!--明细查询-->
-  <select id="selectUserRoles" parameterType="java.lang.Integer" resultMap="com.github.jamsa.rap.mapper.RoleMapper.BaseResultMap">
-    select r.* from RAP_USER_ROLE ur,RAP_ROLE r where ur.USER_ID=#{userId} and ur.ROLE_ID=r.ROLE_ID
-  </select>
-  <resultMap id="DetailResultMap" type="com.github.jamsa.rap.model.User" extends="BaseResultMap">
-
-    <collection property="roles" column="USER_ID" javaType="ArrayList" ofType="com.github.jamsa.rap.model.Role" select="selectUserRoles" >
-    </collection>
-
-  </resultMap>
-
+  <!--使用DetailResultMap关联查询用户角色信息-->
   <select id="selectByPrimaryKey" parameterType="java.lang.Integer" resultMap="DetailResultMap">
     <!--
       WARNING - @mbggenerated
@@ -61,6 +51,7 @@
     delete from RAP_USER
     where USER_ID = #{userId,jdbcType=INTEGER}
   </delete>
+
   <insert id="insert" parameterType="com.github.jamsa.rap.model.User">
     <!--
       WARNING - @mbggenerated
@@ -79,6 +70,7 @@
       #{creationDate,jdbcType=TIMESTAMP}, #{lastUpdateDate,jdbcType=TIMESTAMP}, #{lastUpdatedBy,jdbcType=INTEGER}, 
       #{memo,jdbcType=VARCHAR})
   </insert>
+
   <insert id="insertSelective" parameterType="com.github.jamsa.rap.model.User">
     <!--
       WARNING - @mbggenerated
@@ -257,4 +249,28 @@
       </if>
     </trim>
   </select>
+
+  <!--查询用户角色-->
+  <select id="selectUserRoles" parameterType="java.lang.Integer" resultMap="BaseResultMap">
+    select r.* from RAP_USER_ROLE ur,RAP_ROLE r where ur.USER_ID=#{userId} and ur.ROLE_ID=r.ROLE_ID
+  </select>
+
+  <!--删除用户所有角色-->
+  <delete id="deleteUserAllRoles" parameterType="java.lang.Integer">
+    delete from RAP_USER_ROLE where USER_ID = #{userId,jdbcType=INTEGER}
+  </delete>
+
+  <!--插入用户角色-->
+  <insert id="insertUserRoles">
+    insert into RAP_USER_ROLE(USER_ID,ROLE_ID) values
+    <foreach collection="roles" item="item" index="index" separator=",">
+      (#{userId},#{item.roleId})
+    </foreach>
+  </insert>
+
+  <!--明细查询-->
+  <resultMap id="DetailResultMap" type="com.github.jamsa.rap.model.User" extends="com.github.jamsa.rap.mapper.RoleMapper.BaseResultMap">
+    <collection property="roles" column="USER_ID" javaType="ArrayList" ofType="com.github.jamsa.rap.model.Role" select="selectUserRoles" >
+    </collection>
+  </resultMap>
 </mapper>

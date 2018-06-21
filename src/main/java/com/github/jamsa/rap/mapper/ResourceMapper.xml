@@ -230,4 +230,9 @@
       </if>
     </trim>
   </select>
+
+  <!--在删除资源时，删除角色与资源的关联-->
+  <delete id="deleteRoleResources" parameterType="java.lang.Integer">
+    delete from RAP_ROLE_RESOURCE where RESOURCE_ID = #{resourceId,jdbcType=INTEGER}
+  </delete>
 </mapper>

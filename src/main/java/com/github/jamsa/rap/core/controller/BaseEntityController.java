@@ -80,7 +80,7 @@ public abstract class BaseEntityController<T extends BaseEntity<P>,P extends Ser
         return ResponseEntity.ok(result);
     }
 
-    @RequestMapping(value = "",method = RequestMethod.PUT)
+    @RequestMapping(value = "/{id}",method = RequestMethod.PUT)
     public ResponseEntity update(@RequestBody @Valid T record,Errors errors){
         checkPermissions("edit");
         if(errors.hasErrors()){

@@ -1,8 +1,10 @@
 package com.github.jamsa.rap.mapper;
 
 import com.github.jamsa.rap.core.mapper.BaseMapper;
+import com.github.jamsa.rap.model.Resource;
 import com.github.jamsa.rap.model.Role;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -58,4 +60,42 @@ public interface RoleMapper extends BaseMapper<Role, Integer> {
 
     /** @mbggenerated */
     List<Role> selectByCondition(Role condition);
+
+    /**
+     * 获取角色的所有资源
+     * @param roleId
+     * @return
+     */
+    List<Resource> selectRoleResources(Integer roleId);
+
+    /**
+     * 删除用户与角色关系表中的角色记录
+     * @param roleId
+     * @return
+     */
+    int deleteUserRoles(Integer roleId);
+
+    /**
+     * 删除角色的部分资源
+     * @param roleId
+     * @param resources
+     * @return
+     */
+    int deleteRoleResources(@Param("roleId") Integer roleId,@Param("resourceIds") List<Integer> resourceIds);
+
+    /**
+     * 向角色添加资源
+     * @param roleId
+     * @param resources
+     * @return
+     */
+    int insertRoleResources(@Param("roleId") Integer roleId,@Param("resourceIds") List<Integer> resourceIds);
+
+    /**
+     * 删除角色的所有资源
+     * @param roleId
+     * @return
+     */
+    //int deleteRoleAllResources(Integer roleId);
+
 }

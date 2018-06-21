@@ -1,8 +1,10 @@
 package com.github.jamsa.rap.mapper;
 
 import com.github.jamsa.rap.core.mapper.BaseMapper;
+import com.github.jamsa.rap.model.Role;
 import com.github.jamsa.rap.model.User;
 import org.apache.ibatis.annotations.Mapper;
+import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
 
@@ -58,4 +60,8 @@ public interface UserMapper extends BaseMapper<User, Integer> {
 
     /** @mbggenerated */
     List<User> selectByCondition(User condition);
+
+    void deleteUserAllRoles(@Param("userId") Integer userId);
+
+    void insertUserRoles(@Param("userId") Integer userId,@Param("roles") List<Role> roles);
 }

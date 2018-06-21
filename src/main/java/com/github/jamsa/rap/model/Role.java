@@ -1,7 +1,10 @@
 package com.github.jamsa.rap.model;
 
 import com.github.jamsa.rap.core.model.BaseEntity;
+
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 public class Role extends BaseEntity<Integer> {
     /**
@@ -282,5 +285,25 @@ public class Role extends BaseEntity<Integer> {
 
     public void setPrimaryKey(Integer pkValue) {
         this.setRoleId(pkValue);
+    }
+
+    List<Integer> addResourceIds = new ArrayList<>();
+
+    List<Integer> delResourceIds = new ArrayList<>();
+
+    public List<Integer> getAddResourceIds() {
+        return addResourceIds;
+    }
+
+    public void setAddResourceIds(List<Integer> addResourceIds) {
+        this.addResourceIds = addResourceIds;
+    }
+
+    public List<Integer> getDelResourceIds() {
+        return delResourceIds;
+    }
+
+    public void setDelResourceIds(List<Integer> delResourceIds) {
+        this.delResourceIds = delResourceIds;
     }
 }
