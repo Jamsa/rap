@@ -8,6 +8,9 @@ import com.github.jamsa.rap.core.service.BaseEntityService;
 import com.github.jamsa.rap.mapper.UserMapper;
 import com.github.jamsa.rap.model.User;
 
+import java.util.List;
+import java.util.Set;
+
 
 /**
  * Created by zhujie on 16/7/5.
@@ -41,5 +44,17 @@ public class UserService extends BaseEntityService<User,Integer> {
         if(!record.getRoles().isEmpty())
             userMapper.insertUserRoles(record.getUserId(),record.getRoles());
         return record;
+    }
+
+    public String getUserPassword(String username){
+        return userMapper.selectUserPassword(username);
+    }
+
+    public Set<String> getUserRoleCodes(String username){
+        return userMapper.selectUserRoleCodes(username);
+    }
+
+    public Set<String> getUserResourceCodes(String username){
+        return userMapper.selectUserResourceCodes(username);
     }
 }

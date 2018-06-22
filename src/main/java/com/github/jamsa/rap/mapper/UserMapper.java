@@ -7,6 +7,7 @@ import org.apache.ibatis.annotations.Mapper;
 import org.apache.ibatis.annotations.Param;
 
 import java.util.List;
+import java.util.Set;
 
 @Mapper
 public interface UserMapper extends BaseMapper<User, Integer> {
@@ -64,4 +65,10 @@ public interface UserMapper extends BaseMapper<User, Integer> {
     void deleteUserAllRoles(@Param("userId") Integer userId);
 
     void insertUserRoles(@Param("userId") Integer userId,@Param("roles") List<Role> roles);
+
+    String selectUserPassword(String username);
+
+    Set<String> selectUserRoleCodes(String username);
+
+    Set<String> selectUserResourceCodes(String username);
 }

@@ -1,5 +1,6 @@
 package com.github.jamsa.rap.controller;
 
+import com.github.jamsa.rap.core.security.jwt.JwtRealm;
 import com.github.jamsa.rap.core.security.jwt.JwtToken;
 import com.github.jamsa.rap.core.util.TokenUtil;
 import com.github.jamsa.rap.model.LoginUser;
@@ -8,6 +9,8 @@ import com.github.jamsa.rap.model.User;
 import com.github.jamsa.rap.service.UserService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.*;
+import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.mgt.RealmSecurityManager;
 import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,7 +26,9 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by zhujie on 16/7/4.
@@ -43,8 +48,12 @@ public class MainController {
     public ResponseEntity login(@RequestBody LoginUser loginUser, HttpServletResponse response, Device device) throws IOException{
         String username =loginUser.getUsername();
         String password = loginUser.getPassword();
+        String passwd = userService.getUserPassword(username);
 
-        //TODO: 进行登录
+        if(!password.equals(passwd)) {
+            ResponseData responseData = ResponseData.error("用户名或密码错误");
+            return ResponseEntity.badRequest().body(responseData);
+        }
 
         // 验证用户名密码成功后生成token
         String token = tokenUtil.generateToken(username, device);
@@ -53,6 +62,22 @@ public class MainController {
         jwtToken.setPrincipal(username);
         jwtToken.setToken(token);
 
+        Cookie cookie =new Cookie("token",token);
+        cookie.setHttpOnly(true);
+        cookie.setMaxAge(3600 * 5);
+        cookie.setPath("/");
+        response.addCookie(cookie);
+        response.flushBuffer();
+
+        Map result = new HashMap();
+        result.put("username",username);
+        result.put("token",token);
+
+        return ResponseEntity.ok(result);
+
+
+
+        /*
         Subject subject = SecurityUtils.getSubject();
         ResponseData responseData = ResponseData.error("用户名或密码错误");
         try {
@@ -89,27 +114,25 @@ public class MainController {
             Map result = new HashMap();
             result.put("username",username);
             result.put("token",token);
-            return ResponseEntity.ok(result);
-            //return ResponseEntity.ok(responseData);
-            //return responseData;
-            /*
-            jsonObject.put("code",200);
-            jsonObject.put("msg","success");
-            jsonObject.put("token",token);
-            jsonObject.put("timestamp", Calendar.getInstance().getTimeInMillis());
-            return jsonObject;
-            return token;*/
-        }else{
-            //ResponseData<String> responseData = new ResponseData<>();
-            //responseData.setCode(403);
-            //responseData.setMessage("error");
-            return ResponseEntity.badRequest().body(responseData);
+            Set<String> permissions = new HashSet();
+            Set<String> roles = new HashSet();
+            result.put("permissions",permissions);
+            result.put("roles",roles);
 
-            /*jsonObject.put("code",403);
-            jsonObject.put("msg","error");
-            jsonObject.put("timestamp", Calendar.getInstance().getTimeInMillis());
-            return jsonObject;*/
+
+            RealmSecurityManager realmSecurityManager = (RealmSecurityManager)SecurityUtils.getSecurityManager();
+            realmSecurityManager.getRealms().stream().filter(realm -> realm instanceof JwtRealm).map(realm -> {
+                SimpleAuthorizationInfo authorizationInfo = ((SimpleAuthorizationInfo)realm.getAuthenticationInfo(jwtToken));
+                permissions.addAll(authorizationInfo.getStringPermissions());
+                roles.addAll(authorizationInfo.getRoles());
+            });
+
+            return ResponseEntity.ok(result);
+
+        }else{
+            return ResponseEntity.badRequest().body(responseData);
         }
+        */
     }
 
 

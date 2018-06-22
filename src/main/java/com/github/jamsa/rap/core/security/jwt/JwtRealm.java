@@ -1,18 +1,18 @@
 package com.github.jamsa.rap.core.security.jwt;
 
 import com.github.jamsa.rap.core.util.TokenUtil;
+import com.github.jamsa.rap.service.UserService;
 import org.apache.shiro.authc.AuthenticationException;
 import org.apache.shiro.authc.AuthenticationInfo;
 import org.apache.shiro.authc.AuthenticationToken;
 import org.apache.shiro.authc.SimpleAuthenticationInfo;
 import org.apache.shiro.authz.AuthorizationInfo;
 import org.apache.shiro.authz.SimpleAuthorizationInfo;
+import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.realm.AuthorizingRealm;
 import org.apache.shiro.subject.PrincipalCollection;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.util.StringUtils;
 
-import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -21,9 +21,11 @@ import java.util.Set;
 public class JwtRealm extends AuthorizingRealm {
 
     private TokenUtil tokenUtil;
+    private UserService userService;
 
-    public JwtRealm(TokenUtil tokenUtil) {
+    public JwtRealm(TokenUtil tokenUtil, UserService userService) {
         this.tokenUtil = tokenUtil;
+        this.userService = userService;
     }
 
     @Override
@@ -36,17 +38,11 @@ public class JwtRealm extends AuthorizingRealm {
     protected AuthorizationInfo doGetAuthorizationInfo(PrincipalCollection principals) {
         String username = (String)principals.getPrimaryPrincipal();
         SimpleAuthorizationInfo authorizationInfo = new SimpleAuthorizationInfo();
-
-        //TODO: 查询角色
-        Set<String> roles = new HashSet<>();
-        roles.add("admin");
-        roles.add("superadmin");
+        Set<String> roles = userService.getUserRoleCodes(username);
 
         authorizationInfo.setRoles(roles);
 
-        //TODO: 查询权限
-        Set<String> permissions = new HashSet<>();
-        permissions.add("system:*");
+        Set<String> permissions = userService.getUserResourceCodes(username);
 
         authorizationInfo.setStringPermissions(permissions);
         return authorizationInfo;
@@ -63,6 +59,9 @@ public class JwtRealm extends AuthorizingRealm {
         }
 
         String username = tokenUtil.getUsernameFromToken(tokenStr);
+        if(StringUtils.isEmpty(username)){
+            throw new AuthenticationException("令牌失效，访问被拒绝！");
+        }
 
         return new SimpleAuthenticationInfo(username,tokenStr,getName());
     }

@@ -4,11 +4,13 @@ import com.github.jamsa.rap.core.security.filter.JwtAuthenticationFilter;
 import com.github.jamsa.rap.core.security.jwt.JwtRealm;
 import com.github.jamsa.rap.core.security.StatelessDefaultSubjectFactory;
 import com.github.jamsa.rap.core.util.TokenUtil;
+import com.github.jamsa.rap.service.UserService;
 import org.apache.shiro.SecurityUtils;
 import org.apache.shiro.authc.credential.CredentialsMatcher;
 import org.apache.shiro.authc.credential.HashedCredentialsMatcher;
 import org.apache.shiro.cache.CacheManager;
 import org.apache.shiro.cache.MemoryConstrainedCacheManager;
+import org.apache.shiro.cache.ehcache.EhCacheManager;
 import org.apache.shiro.mgt.DefaultSecurityManager;
 import org.apache.shiro.mgt.DefaultSessionStorageEvaluator;
 import org.apache.shiro.mgt.DefaultSubjectDAO;
@@ -21,6 +23,7 @@ import org.apache.shiro.web.mgt.DefaultWebSubjectFactory;
 import org.springframework.aop.framework.autoproxy.DefaultAdvisorAutoProxyCreator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
+import org.springframework.cache.ehcache.EhCacheCacheManager;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.DependsOn;
@@ -43,10 +46,10 @@ public class ShiroConfig {
      */
     @Bean(name = "jwtRealm")
     @DependsOn("lifecycleBeanPostProcessor")
-    public JwtRealm jwtRealm(TokenUtil tokenUtil) {
-        JwtRealm jwtRealm = new JwtRealm(tokenUtil);
+    public JwtRealm jwtRealm(TokenUtil tokenUtil, UserService userService) {
+        JwtRealm jwtRealm = new JwtRealm(tokenUtil,userService);
         // jwtRealm.setCredentialsMatcher(credentialsMatcher());
-        jwtRealm.setCachingEnabled(false);
+        jwtRealm.setCachingEnabled(true);
         return jwtRealm;
     }
 
@@ -112,8 +115,6 @@ public class ShiroConfig {
     public DefaultWebSecurityManager securityManager(JwtRealm jwtRealm){
         DefaultWebSecurityManager securityManager =  new DefaultWebSecurityManager();
 
-        securityManager.setRealm(jwtRealm);
-
         // 替换默认的DefaultSubjectFactory，用于关闭session功能
         securityManager.setSubjectFactory(subjectFactory());
         securityManager.setSessionManager(sessionManager());
@@ -123,6 +124,8 @@ public class ShiroConfig {
 
         // 用户授权/认证信息Cache, 后期可采用EhCache缓存
         securityManager.setCacheManager(cacheManager());
+
+        securityManager.setRealm(jwtRealm);
 
         SecurityUtils.setSecurityManager(securityManager);
         return securityManager;
@@ -143,11 +146,12 @@ public class ShiroConfig {
      * 用户授权信息缓存
      * @return
      */
-    //@Bean
+    //@Bean("shiroCacheManager")
     public CacheManager cacheManager() {
-        // EhCacheManager cacheManager = new EhCacheManager();
-        // cacheManager.setCacheManagerConfigFile("classpath:ehcache.xml");
-        return new MemoryConstrainedCacheManager();
+         EhCacheManager cacheManager = new EhCacheManager();
+         cacheManager.setCacheManagerConfigFile("classpath:shiro-ehcache.xml");
+         return cacheManager;
+        //return new MemoryConstrainedCacheManager();
     }
 
     /**

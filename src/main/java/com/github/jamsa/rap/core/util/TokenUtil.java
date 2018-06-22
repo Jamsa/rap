@@ -133,7 +133,7 @@ public class TokenUtil {
      */
     private Boolean isTokenExpired(String token) {
         final Date expiration = getExpirationDateFromToken(token);
-        return expiration.before(new Date());
+        return (expiration!=null && expiration.before(new Date()));
     }
 
     /**

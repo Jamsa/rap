@@ -28,8 +28,9 @@ public abstract class BaseEntityController<T extends BaseEntity<P>,P extends Ser
 
 
     protected void checkPermissions(String permissions){
-        //TODO
-        //if(!SecurityUtils.getSubject().isPermitted(this.getClass().getSimpleName()+":"+permissions)) throw new AuthorizationException("aaa");
+        String permission = this.getClass().getSimpleName().replace("Controller","")+":"+permissions;
+        if(!SecurityUtils.getSubject().isPermitted(permission))
+            throw new AuthorizationException("没有权限访问目标资源!");
     }
 
     @RequestMapping(value = "",method = {RequestMethod.GET})
