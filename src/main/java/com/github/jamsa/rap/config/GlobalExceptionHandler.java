@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
     //@ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     @ExceptionHandler
     public ResponseEntity runtimeException(HttpServletRequest request, Exception e) throws Exception {
-        return ResponseEntity.badRequest().body(e.getMessage());
+        return ResponseEntity.badRequest().body(e);
         //return ResponseData.error(e.getMessage());
     }
 

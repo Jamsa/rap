@@ -61,4 +61,18 @@ public class RoleService extends BaseEntityService<Role,Integer> {
         return pageInfo;
     }
 
+    public int addRoleResources(Integer roleId,List<Integer> resourceIds){
+        if(resourceIds!=null && !resourceIds.isEmpty()){
+            return roleMapper.insertRoleResources(roleId,resourceIds);
+        }
+        return 0;
+    }
+
+    public int deleteRoleResources(Integer roleId,List<Integer> resourceIds){
+        if(resourceIds!=null && !resourceIds.isEmpty()){
+            return roleMapper.deleteRoleResources(roleId,resourceIds);
+        }
+        return 0;
+    }
+
 }
