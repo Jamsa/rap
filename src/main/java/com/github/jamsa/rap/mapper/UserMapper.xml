@@ -276,17 +276,17 @@
 
   <!--查询用户密码-->
   <select id="selectUserPassword" resultType="java.lang.String" parameterType="java.lang.String">
-    select u.PASSWORD from rap_user u where u.USERNAME=#{username}
+    select u.PASSWORD from RAP_USER u where u.USERNAME=#{username}
   </select>
 
   <!--查询用户资源代码-->
   <select id="selectUserRoleCodes" resultType="java.lang.String" parameterType="java.lang.String">
-    select distinct r.CODE from rap_user u,RAP_USER_ROLE ur,RAP_ROLE r where u.USERNAME=#{username} and u.USER_ID=ur.USER_ID and ur.ROLE_ID=r.ROLE_ID
+    select distinct r.CODE from RAP_USER u,RAP_USER_ROLE ur,RAP_ROLE r where u.USERNAME=#{username} and u.USER_ID=ur.USER_ID and ur.ROLE_ID=r.ROLE_ID
   </select>
 
   <!--查询用户角色代码-->
   <select id="selectUserResourceCodes" resultType="java.lang.String" parameterType="java.lang.String">
-    select distinct s.CODE from rap_user u,RAP_USER_ROLE ur,RAP_ROLE r,RAP_ROLE_RESOURCE rr,RAP_RESOURCE s
+    select distinct s.CODE from RAP_USER u,RAP_USER_ROLE ur,RAP_ROLE r,RAP_ROLE_RESOURCE rr,RAP_RESOURCE s
     where u.USERNAME=#{username} and u.USER_ID=ur.USER_ID and ur.ROLE_ID=r.ROLE_ID
     and r.ROLE_ID=rr.ROLE_ID and rr.RESOURCE_ID=s.RESOURCE_ID
   </select>
