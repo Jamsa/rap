@@ -17,7 +17,7 @@ server:
   context-path: /rap
 
 mybatis:
-  type-aliases-package: com.github.jamsa.rap.model
+  type-aliases-package: com.github.jamsa.rap.**.model
   #type-handlers-package: com.example.typehandler
   configuration:
     map-underscore-to-camel-case: true
@@ -25,7 +25,7 @@ mybatis:
     default-statement-timeout: 30
   #config-location: classpath:mybatis-config.xml
   check-config-location: true
-  mapper-locations: classpath:com/github/jamsa/rap/mapper/*Mapper.xml
+  mapper-locations: classpath*:com/github/jamsa/rap/**/*Mapper.xml
 
 logging:
   pattern:

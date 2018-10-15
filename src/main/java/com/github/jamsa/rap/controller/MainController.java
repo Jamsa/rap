@@ -1,21 +1,14 @@
 package com.github.jamsa.rap.controller;
 
-import com.github.jamsa.rap.core.security.jwt.JwtRealm;
 import com.github.jamsa.rap.core.security.jwt.JwtToken;
 import com.github.jamsa.rap.core.util.TokenUtil;
 import com.github.jamsa.rap.model.LoginUser;
 import com.github.jamsa.rap.model.ResponseData;
-import com.github.jamsa.rap.model.User;
 import com.github.jamsa.rap.service.UserService;
 import org.apache.shiro.SecurityUtils;
-import org.apache.shiro.authc.*;
-import org.apache.shiro.authz.SimpleAuthorizationInfo;
-import org.apache.shiro.mgt.RealmSecurityManager;
-import org.apache.shiro.subject.Subject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mobile.device.Device;
 import org.springframework.util.StringUtils;
@@ -26,9 +19,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.HashMap;
-import java.util.HashSet;
 import java.util.Map;
-import java.util.Set;
 
 /**
  * Created by zhujie on 16/7/4.

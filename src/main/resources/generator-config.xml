@@ -17,7 +17,6 @@
         </table>
         -->
 
-        <!--
         <table domainObjectName="User" tableName="RAP_USER" enableCountByExample="false"
                enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
             <generatedKey column="USER_ID" sqlStatement="Mysql" identity="true" />
@@ -26,7 +25,7 @@
                enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
             <generatedKey column="ROLE_ID" sqlStatement="Mysql" identity="true" />
         </table>
-        -->
+
         <table domainObjectName="Resource" tableName="RAP_RESOURCE" enableCountByExample="false"
                enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
             <generatedKey column="RESOURCE_ID" sqlStatement="Mysql" identity="true" />
@@ -39,5 +38,35 @@
                enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
             <generatedKey column="DICT_VALUE_ID" sqlStatement="Mysql" identity="true" />
         </table>
+
+        <table domainObjectName="RapMetaModel" tableName="RAP_META_MODEL" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+            <generatedKey column="MODEL_ID" sqlStatement="Mysql" identity="true" />
+        </table>
+
+        <table domainObjectName="RapMetaModelViewObject" tableName="RAP_META_MODEL_OBJECT" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+        </table>
+
+        <table domainObjectName="RapMetaViewObject" tableName="RAP_META_VIEW_OBJECT" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+            <generatedKey column="VIEW_OBJECT_ID" sqlStatement="Mysql" identity="true" />
+        </table>
+
+        <table domainObjectName="RapMetaViewField" tableName="RAP_META_VIEW_FIELD" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+            <generatedKey column="FIELD_ID" sqlStatement="Mysql" identity="true" />
+        </table>
+
+        <table domainObjectName="RapMetaTable" tableName="RAP_META_TABLE" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+            <generatedKey column="TABLE_ID" sqlStatement="Mysql" identity="true" />
+        </table>
+
+        <table domainObjectName="RapMetaTableField" tableName="RAP_META_TABLE_FIELD" enableCountByExample="false"
+               enableDeleteByExample="false" enableSelectByExample="false" enableUpdateByExample="false" >
+            <generatedKey column="FIELD_ID" sqlStatement="Mysql" identity="true" />
+        </table>
+
     </context>
 </generatorConfiguration>
