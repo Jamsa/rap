@@ -1,14 +1,14 @@
 package com.github.jamsa.rap.meta;
 
 public class Constant {
-    public static final  String FIELD_TYPE_STRING="STRING";
+    /*public static final  String FIELD_TYPE_STRING="STRING";
     public static final  String FIELD_TYPE_FLOAT="FLOAT";
     public static final  String FIELD_TYPE_DOUBLE="DOUBLE";
     public static final  String FIELD_TYPE_INT="INT";
     public static final  String FIELD_TYPE_LONG="LONG";
     public static final  String FIELD_TYPE_CLOB="CLOB";
     public static final  String FIELD_TYPE_DATE="DATE";
-    public static final  String FIELD_TYPE_DATETIME="DATETIME";
+    public static final  String FIELD_TYPE_DATETIME="DATETIME";*/
 
     /*public static final  String MODEL_VIEW_OBJECT_TYPE_MAIN="MAIN";
     public static final  String MODEL_VIEW_OBJECT_TYPE_ADDITIONAL="ADDITIONAL";

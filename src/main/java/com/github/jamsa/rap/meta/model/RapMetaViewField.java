@@ -2,6 +2,7 @@ package com.github.jamsa.rap.meta.model;
 
 import com.github.jamsa.rap.core.model.BaseEntity;
 
+import java.sql.JDBCType;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,12 +11,21 @@ public class RapMetaViewField  extends BaseEntity<Integer> {
     private String fieldName;
     private String fieldCode;
     private String fieldAlias;
-    private String fieldType;
-    private Long tableFieldId;
+
+    private JDBCType dataType;
+    private ModelViewFieldType fieldType;
+    //private Long tableFieldId;
     private Long viewObjectId;
     private boolean keyField;
+
+    private boolean required;
+    private boolean uniq;
+
+    private Integer fieldLength;
+    private Integer fieldPrecision;
+
     private Map<String,String> fieldProps = new HashMap();
-    private RapMetaTableField tableField;
+
     private RapMetaViewObject viewObject;
 
 
@@ -26,6 +36,51 @@ public class RapMetaViewField  extends BaseEntity<Integer> {
     public void setFieldAlias(String fieldAlias) {
         this.firePropertyChange("fieldAlias",fieldAlias);
         this.fieldAlias = fieldAlias;
+    }
+
+    public ModelViewFieldType getFieldType() {
+        return fieldType;
+    }
+
+    public void setFieldType(ModelViewFieldType fieldType) {
+        this.firePropertyChange("fieldType",fieldType);
+        this.fieldType = fieldType;
+    }
+
+    public boolean isRequired() {
+        return required;
+    }
+
+    public void setRequired(boolean required) {
+        this.firePropertyChange("required",required);
+        this.required = required;
+    }
+
+    public boolean isUniq() {
+        return uniq;
+    }
+
+    public void setUniq(boolean uniq) {
+        this.firePropertyChange("uniq",uniq);
+        this.uniq = uniq;
+    }
+
+    public Integer getFieldLength() {
+        return fieldLength;
+    }
+
+    public void setFieldLength(Integer fieldLength) {
+        this.firePropertyChange("fieldLength",fieldLength);
+        this.fieldLength = fieldLength;
+    }
+
+    public Integer getFieldPrecision() {
+        return fieldPrecision;
+    }
+
+    public void setFieldPrecision(Integer fieldPrecision) {
+        this.firePropertyChange("fieldPrecision",fieldPrecision);
+        this.fieldPrecision = fieldPrecision;
     }
 
     public boolean isKeyField() {
@@ -63,13 +118,13 @@ public class RapMetaViewField  extends BaseEntity<Integer> {
         this.fieldCode = fieldCode;
     }
 
-    public String getFieldType() {
-        return fieldType;
+    public JDBCType getDataType() {
+        return dataType;
     }
 
-    public void setFieldType(String fieldType) {
-        this.firePropertyChange("fieldType",fieldType);
-        this.fieldType = fieldType;
+    public void setDataType(JDBCType dataType) {
+        this.firePropertyChange("dataType", dataType);
+        this.dataType = dataType;
     }
 
     public Map<String, String> getFieldProps() {
@@ -80,7 +135,7 @@ public class RapMetaViewField  extends BaseEntity<Integer> {
         this.fieldProps = fieldProps;
     }
 
-    public RapMetaTableField getTableField() {
+    /*public RapMetaTableField getTableField() {
         return tableField;
     }
 
@@ -95,7 +150,7 @@ public class RapMetaViewField  extends BaseEntity<Integer> {
     public void setTableFieldId(Long tableFieldId) {
         this.firePropertyChange("tableFieldId",tableFieldId);
         this.tableFieldId = tableFieldId;
-    }
+    }*/
 
     public Long getViewObjectId() {
         return viewObjectId;

@@ -8,6 +8,7 @@ public class RapMetaModelViewObject extends RapMetaViewObject{
     private Long refFieldId;
     private Long modelId;
     private String viewAlias;
+
     private RapMetaViewField refField;
     private RapMetaModel model;
 

@@ -7,12 +7,14 @@ import java.util.Map;
 
 public class RapMetaViewObject  extends BaseEntity<Integer> {
     private Long viewObjectId;
-    private Long tableId;
+    private Long appId;
+    private String tableName;
+    private String tableCode;
     private String objectName;
     private String objectCode;
     private String objectSql;
     //private Map<String,RapMetaViewField> objectFields = new HashMap();
-    private RapMetaTable table;
+    //private RapMetaTable table;
     //private Long keyFieldId;
     private RapMetaViewField keyField;
 
@@ -38,12 +40,40 @@ public class RapMetaViewObject  extends BaseEntity<Integer> {
         if(viewField.isKeyField())keyField=viewField;
     }
 
+    /*
     public RapMetaTable getTable() {
         return table;
     }
 
     public void setTable(RapMetaTable table) {
         this.table = table;
+    }*/
+
+    public Long getAppId() {
+        return appId;
+    }
+
+    public void setAppId(Long appId) {
+        this.firePropertyChange("appId",appId);
+        this.appId = appId;
+    }
+
+    public String getTableCode() {
+        return tableCode;
+    }
+
+    public void setTableCode(String tableCode) {
+        this.firePropertyChange("tableCode",tableCode);
+        this.tableCode = tableCode;
+    }
+
+    public String getTableName() {
+        return tableName;
+    }
+
+    public void setTableName(String tableName) {
+        this.firePropertyChange("tableName",tableName);
+        this.tableName = tableName;
     }
 
     public Long getViewObjectId() {
@@ -55,14 +85,14 @@ public class RapMetaViewObject  extends BaseEntity<Integer> {
         this.viewObjectId = viewObjectId;
     }
 
-    public Long getTableId() {
+    /*public Long getTableId() {
         return tableId;
     }
 
     public void setTableId(Long tableId) {
         this.firePropertyChange("tableId",tableId);
         this.tableId = tableId;
-    }
+    }*/
 
     /*
     public Long getKeyFieldId() {

@@ -207,7 +207,9 @@
       mo.CREATABLE,
       mo.REL_FIELD_ID,
 
-      vo.TABLE_ID,
+      vo.APP_ID,
+      vo.TABLE_NAME,
+      vo.TABLE_CODE,
       vo.OBJECT_CODE,
       vo.OBJECT_SQL,
       vo.CREATED_BY,

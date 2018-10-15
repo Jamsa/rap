@@ -36,21 +36,8 @@ public class RapMetaModel  extends BaseEntity<Integer> {
     protected String getDeleteByMainKeySql(RapMetaModelViewObject v){
         return Optional.ofNullable(v).filter(RapMetaModelViewObject::isDeletable)
                 .map(mv->mv.getViewType()==ModelViewObjectType.MAIN?mv.getKeyField():mv.getRefField())
-                .map(RapMetaViewField::getTableField)
-                .map(tf->"delete from "+tf.getTable().getTableCode()+" where "+tf.getFieldCode()+"=?").orElse(null);
-
-
-        /*RapMetaViewField keyField = v.getViewType()==ModelViewObjectType.MAIN?v.getKeyField():v.getRefField();
-
-        if(keyField!=null &&
-                keyField.getTableField()!=null &&
-                v.isDeletable() &&
-                v.getTable()!=null &&
-                v.getRefField()!=null &&
-                v.getRefField().getTableField()!=null){
-            return "delete from "+v.getTable().getTableCode()+" where "+keyField.getTableField().getFieldCode()+"=?";
-        }
-        return null;*/
+                //.map(RapMetaViewField::getTableField)
+                .map(tf->"delete from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?").orElse(null);
     }
 
     //private String[] deleteByPrimaryKeySqls=null;
@@ -60,64 +47,61 @@ public class RapMetaModel  extends BaseEntity<Integer> {
                 .filter(StringUtils::isEmpty)
                 .map(s->new SqlAndParamValues(s,new Object[]{id})).collect(Collectors.toList());
 
-        /*Collection<RapMetaModelViewObject> viewObjects = this.getModelViewObjects().values();
-        return Arrays.asList(Constant.MODEL_VIEW_OBJECT_TYPE_SUBTABLE,Constant.MODEL_VIEW_OBJECT_TYPE_ADDITIONAL,Constant.MODEL_VIEW_OBJECT_TYPE_MAIN)
-                .stream().flatMap(viewType->viewObjects.stream().filter(v->v.getViewType().equals(viewType)))
-                .map(v->getDeleteByMainKeySql(v))
-                .filter(s->!StringUtils.isEmpty(s)).map(s->new SqlAndParamValues(s,new Object[]{id})).collect(Collectors.toList());*/
     }
 
     public SqlAndParamValues getDeleteSql(RapMetaModelViewObject v, Object id){
-        return Optional.ofNullable(v).filter(RapMetaModelViewObject::isDeletable)
+        return Optional.ofNullable(v).filter(vo->!StringUtils.isEmpty(vo.getTableCode()) && vo.isDeletable())
                 .map(RapMetaViewObject::getKeyField)
-                .map(RapMetaViewField::getTableField)
-                .map(tf->new SqlAndParamValues("delete from "+tf.getTable().getTableCode()+" where "+tf.getFieldCode()+"=?",new Object[]{id}))
+                .map(tf->new SqlAndParamValues("delete from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?",new Object[]{id}))
                 .orElse(null);
     }
 
     public SqlAndParamValues getSaveSql(RapMetaModelViewObject v,Map record){
+        return Optional.ofNullable(v).filter(vo->vo.getTableCode()!=null&&vo.isCreatable())
+                .map(vo->{
+                    List<String> fieldNames = new ArrayList();
+                    List<String> fieldParams = new ArrayList();
+                    List<Object> fieldValues = new ArrayList();
+                    vo.getViewFields().values().stream().filter(f->f.getFieldType()==ModelViewFieldType.TABLE_COLUMN && !f.isKeyField())
+                            .forEach(f->{
+                                fieldNames.add(f.getFieldCode());
+                                fieldParams.add("?");
+                                fieldValues.add(record.get(f.getFieldAlias()));
+                            });
+                    StringBuffer buf = new StringBuffer();
+                    buf.append("insert into ").append(vo.getTableCode())
+                            .append("(").append(String.join(",",fieldNames))
+                            .append(") values(")
+                            .append(String.join(",",fieldParams))
+                            .append(")");
+                    return new SqlAndParamValues(buf.toString(),fieldValues.toArray());
+                }).orElse(null);
 
-        List<String> fieldNames = new ArrayList();
-        List<String> fieldParams = new ArrayList();
-        List<Object> fieldValues = new ArrayList();
-        if(v.getTable()!=null&&v.isCreatable()){
-            // 非主键的表字段
-            v.getViewFields().values().stream().filter(f->f.getTableField()!=null && !f.getTableField().isKeyField()).forEach(f->{
-                fieldNames.add(f.getTableField().getFieldCode());
-                fieldParams.add("?");
-                fieldValues.add(record.get(f.getFieldAlias()));
-            });
-            StringBuffer buf = new StringBuffer();
-            buf.append("insert into ").append(v.getTable().getTableCode())
-                    .append("(").append(String.join(",",fieldNames))
-                    .append(") values(")
-                    .append(String.join(",",fieldParams))
-                    .append(")");
-            return new SqlAndParamValues(buf.toString(),fieldValues.toArray());
-        }
-        return null;
     }
 
     public SqlAndParamValues getUpdateSql(RapMetaModelViewObject v,Map record){
-        List<String> fieldNames = new ArrayList();
-        List<Object> fieldValues = new ArrayList();
-        if(v.getTable()!=null&&v.isUpdatable()){
-            // 非主键的表字段
-            v.getViewFields().values().stream().filter(f->f.getTableField()!=null && !f.getTableField().isKeyField()).forEach(f->{
-                fieldNames.add(f.getTableField().getFieldCode()+" = ?");
-                fieldValues.add(record.get(f.getFieldAlias()));
-            });
-            StringBuffer buf = new StringBuffer();
+        return Optional.ofNullable(v).filter(vo->vo.getTableCode()!=null && vo.isUpdatable())
+                .map(vo->{
+                    List<String> fieldNames = new ArrayList();
+                    List<Object> fieldValues = new ArrayList();
 
-            buf.append("update ").append(v.getTable().getTableCode())
-                    .append(" set ").append(String.join(",",fieldNames))
-                    .append(" where ")
-                    .append(v.getKeyField().getTableField().getFieldCode())
-                    .append(" = ?");
-            fieldValues.add(record.get(v.getKeyField().getFieldAlias()));
-            return new SqlAndParamValues(buf.toString(),fieldValues.toArray());
-        }
-        return null;
+                    vo.getViewFields().values().stream()
+                            .filter(f->f.getFieldType()==ModelViewFieldType.TABLE_COLUMN && !f.isKeyField())
+                            .forEach(f->{
+                                fieldNames.add(f.getFieldCode()+" = ?");
+                                fieldValues.add(record.get(f.getFieldAlias()));
+                            });
+                    StringBuffer buf = new StringBuffer();
+
+                    buf.append("update ").append(v.getTableCode())
+                            .append(" set ").append(String.join(",",fieldNames))
+                            .append(" where ")
+                            .append(v.getKeyField().getFieldCode())
+                            .append(" = ?");
+                    fieldValues.add(record.get(v.getKeyField().getFieldAlias()));
+                    return new SqlAndParamValues(buf.toString(),fieldValues.toArray());
+                }).orElse(null);
+
     }
 
     private static Pattern sqlParamPattern = Pattern.compile(":(\\w*)");

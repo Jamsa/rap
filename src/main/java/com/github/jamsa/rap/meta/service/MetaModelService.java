@@ -38,7 +38,7 @@ public class MetaModelService {
     }
 
     protected Map saveViewRecord(RapMetaModelViewObject viewObject, Map record){
-        if(viewObject!=null&&viewObject.isCreatable()&&viewObject.getTable()!=null){
+        if(viewObject!=null&&viewObject.isCreatable()&&viewObject.getTableCode()!=null){
             SqlAndParamValues sqlAndParamValues = metaModel.getSaveSql(viewObject,record);
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(con -> {
@@ -50,10 +50,10 @@ public class MetaModelService {
             },keyHolder);
 
             //获取生成的主键值
-            viewObject.getViewFields().values().stream().filter(f->f.getTableField()!=null
-                    && f.getTableField().isKeyField()
-                    && keyHolder.getKeys().containsKey(f.getTableField().getFieldCode())).forEach(f->{
-                String fieldCode = f.getTableField().getFieldCode();
+            viewObject.getViewFields().values().stream().filter(f->f.getFieldType()==ModelViewFieldType.TABLE_COLUMN
+                    && f.isKeyField()
+                    && keyHolder.getKeys().containsKey(f.getFieldCode())).forEach(f->{
+                String fieldCode = f.getFieldCode();
                 record.put(f.getFieldAlias(),keyHolder.getKeys().get(fieldCode));
             });
         }
@@ -156,12 +156,6 @@ public class MetaModelService {
                 .map(RapMetaViewObject::getKeyField)
                 .map(RapMetaViewField::getFieldAlias)
                 .map(key -> record.get(key)).map(this::deleteByPrimaryKey).orElse(0);
-        /*if(metaModel.getMainViewObject()!=null && metaModel.getMainViewObject().getKeyField()!=null) {
-            String alias = metaModel.getMainViewObject().getKeyField().getFieldAlias();
-            Object id = record.get(alias);
-            return deleteByPrimaryKey(id);
-        }
-        return 0;*/
 
     }
 
