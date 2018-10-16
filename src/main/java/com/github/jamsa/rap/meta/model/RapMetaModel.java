@@ -1,14 +1,21 @@
 package com.github.jamsa.rap.meta.model;
 
 import com.github.jamsa.rap.core.model.BaseEntity;
+import freemarker.cache.StringTemplateLoader;
+import freemarker.template.Configuration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
+import java.io.StringWriter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class RapMetaModel  extends BaseEntity<Integer> {
+    protected static final Logger logger = LoggerFactory.getLogger(RapMetaModel.class);
+
     private Long modelId;
     private Long appId;
     private String modelName;
@@ -32,6 +39,25 @@ public class RapMetaModel  extends BaseEntity<Integer> {
     //getStatusFields(statusCode) 获取某个状态下所有字段信息，字段的属性中包含（状态属性）
     //public Map<String,> getDefaultStatusFields()
 
+
+    private Configuration configuration;
+    private StringTemplateLoader sqlTemplateLoader;
+    public RapMetaModel() {
+        configuration = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
+        sqlTemplateLoader = new StringTemplateLoader();
+        configuration.setTemplateLoader(sqlTemplateLoader);
+    }
+
+    protected String processSqlTempalte(RapMetaModelViewObject v,Map record) throws RuntimeException{
+        StringWriter writer = new StringWriter();
+        try {
+            configuration.getTemplate(v.getObjectCode()).process(record,writer);
+        } catch (Exception e) {
+            logger.error("SQL模板解析出错",e);
+            throw new RuntimeException("SQL模板解析出错",e);
+        }
+        return writer.toString();
+    }
 
     protected String getDeleteByMainKeySql(RapMetaModelViewObject v){
         return Optional.ofNullable(v).filter(RapMetaModelViewObject::isDeletable)
@@ -110,7 +136,6 @@ public class RapMetaModel  extends BaseEntity<Integer> {
     }
 
     private static Pattern sqlParamPattern = Pattern.compile(":(\\w*)");
-
     public static void main(String[] args) {
         Matcher m = sqlParamPattern.matcher("select 1 from aa where a= :hello b = :foo");
         while (m.find()){
@@ -120,11 +145,12 @@ public class RapMetaModel  extends BaseEntity<Integer> {
         System.out.println(m.replaceAll("?"));
 
     }
+
     public SqlAndParamValues getQuerySql(RapMetaModelViewObject v,Map record){
         List<Object> fieldValues = new ArrayList();
 
-        String sql = v.getObjectSql();
-        //todo 支持Sql语句模板
+        //String sql = v.getObjectSql();
+        String sql = processSqlTempalte(v,record);
 
         Matcher matcher = sqlParamPattern.matcher(sql);
         while (matcher.find()){
@@ -198,6 +224,9 @@ public class RapMetaModel  extends BaseEntity<Integer> {
                 RapMetaModel.this.statusField=f;
             }
         });
+
+        //创建SQL模板
+        sqlTemplateLoader.putTemplate(modelViewObject.getObjectCode(), modelViewObject.getObjectSql());
     }
 
     public Map<String, RapMetaModelStatus> getModelStatus() {

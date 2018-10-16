@@ -39,7 +39,7 @@ public class MetaDataServiceTest extends BaseTest {
         pageInfo.setPageSize(10);
         pageInfo.setPageNum(1);
         Map condition = new HashMap();
-        condition.put("lovCode","rapUserLov");
+        //condition.put("lovCode","rapUserLov");
         PageInfo result = metaModelService.findByPage(condition,pageInfo);
         System.out.println(result);
     }

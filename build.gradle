@@ -60,6 +60,7 @@ dependencies {
     compile("org.apache.shiro:shiro-ehcache:1.4.0")
 
     compile ("io.jsonwebtoken:jjwt:0.8.0")
+    compile ("org.freemarker:freemarker:2.3.28")
 
     //compile("org.ehcache:ehcache")
 
