@@ -13,7 +13,7 @@ public class RapMetaViewField  extends BaseEntity<Integer> {
     private String fieldAlias;
 
     private JDBCType dataType;
-    private ModelViewFieldType fieldType;
+    private ModelViewFieldType fieldType=ModelViewFieldType.TABLE_COLUMN;
     //private Long tableFieldId;
     private Long viewObjectId;
     private boolean keyField;
@@ -23,6 +23,8 @@ public class RapMetaViewField  extends BaseEntity<Integer> {
 
     private Integer fieldLength;
     private Integer fieldPrecision;
+    private ModelViewFieldGeneratorType generator=ModelViewFieldGeneratorType.INPUT;
+    private String generatorParam;
 
     private Map<String,String> fieldProps = new HashMap();
 
@@ -36,6 +38,24 @@ public class RapMetaViewField  extends BaseEntity<Integer> {
     public void setFieldAlias(String fieldAlias) {
         this.firePropertyChange("fieldAlias",fieldAlias);
         this.fieldAlias = fieldAlias;
+    }
+
+    public ModelViewFieldGeneratorType getGenerator() {
+        return generator;
+    }
+
+    public void setGenerator(ModelViewFieldGeneratorType generator) {
+        this.firePropertyChange("generator",generator);
+        this.generator = generator;
+    }
+
+    public String getGeneratorParam() {
+        return generatorParam;
+    }
+
+    public void setGeneratorParam(String generatorParam) {
+        this.firePropertyChange("generatorParam",generatorParam);
+        this.generatorParam = generatorParam;
     }
 
     public ModelViewFieldType getFieldType() {

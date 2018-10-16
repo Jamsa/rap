@@ -39,6 +39,7 @@ logging:
             mapper: debug
     org:
       springframework: info
+      springframework.jdbc.core.JdbcTemplate: debug
 
 pagehelper:
   #dialect: mysql

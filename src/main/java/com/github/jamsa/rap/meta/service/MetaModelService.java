@@ -7,6 +7,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
+import javax.swing.text.html.Option;
 import java.sql.PreparedStatement;
 import java.util.*;
 
@@ -42,7 +43,7 @@ public class MetaModelService {
             SqlAndParamValues sqlAndParamValues = metaModel.getSaveSql(viewObject,record);
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(con -> {
-                PreparedStatement ps = con.prepareStatement(sqlAndParamValues.getSql());
+                PreparedStatement ps = con.prepareStatement(sqlAndParamValues.getSql(),PreparedStatement.RETURN_GENERATED_KEYS);
                 for(int i=0;i<sqlAndParamValues.getParams().length;i++){
                     ps.setObject(i+1,sqlAndParamValues.getParams()[i]);
                 }
@@ -51,7 +52,8 @@ public class MetaModelService {
 
             //获取生成的主键值
             viewObject.getViewFields().values().stream().filter(f->f.getFieldType()==ModelViewFieldType.TABLE_COLUMN
-                    && f.isKeyField()
+                    && f.getGenerator()==ModelViewFieldGeneratorType.NATIVE
+                    && keyHolder.getKeys()!=null
                     && keyHolder.getKeys().containsKey(f.getFieldCode())).forEach(f->{
                 String fieldCode = f.getFieldCode();
                 record.put(f.getFieldAlias(),keyHolder.getKeys().get(fieldCode));
@@ -89,14 +91,32 @@ public class MetaModelService {
         return record;
     }
 
+    protected Map convertQueryResult(RapMetaModelViewObject viewObject,Map record){
+        viewObject.getViewFields().values().stream().forEach(vf->{
+            record.put(vf.getFieldAlias(),record.get(vf.getFieldCode()));
+            record.remove(vf.getFieldCode());
+        });
+        return record;
+    }
+
+    protected List<Map<String,Object>> convertQueryResultList(RapMetaModelViewObject viewObject,List<Map<String,Object>> result){
+        Optional.ofNullable(result).map(l->{
+            l.forEach(r->{
+                convertQueryResult(viewObject,r);
+            });
+            return l;
+        });
+        return result;
+    }
+
     public Map findByPrimaryKey(Object id){
         return Optional.ofNullable(metaModel.getMainViewObject()).map(RapMetaViewObject::getKeyField)
                 .map(f->{
                     Map<String,Object> params = new HashMap();
                     params.put(f.getFieldAlias(),id);
                     SqlAndParamValues sqlAndParamValues = metaModel.getQuerySql(metaModel.getMainViewObject(),params);
-                    return jdbcTemplate.queryForMap(sqlAndParamValues.getSql(),sqlAndParamValues.getParams());
-                    //todo: 属性名转换
+                    Map result= jdbcTemplate.queryForMap(sqlAndParamValues.getSql(),sqlAndParamValues.getParams());
+                    return convertQueryResult(metaModel.getMainViewObject(),result);
                 }).orElse(null);
     }
 
@@ -163,8 +183,9 @@ public class MetaModelService {
         RapMetaModelViewObject v = metaModel.getMainViewObject();
 
         SqlAndParamValues sqlAndParamValues = metaModel.getQuerySql(v,record);
-        //todo 转换数据类型
-        return jdbcTemplate.queryForList(sqlAndParamValues.getSql(),sqlAndParamValues.getParams());
+
+        List result = jdbcTemplate.queryForList(sqlAndParamValues.getSql(),sqlAndParamValues.getParams());
+        return convertQueryResultList(v,result);
     }
 
     public PageInfo findByPage(Map record, PageInfo page){
@@ -172,15 +193,16 @@ public class MetaModelService {
 
         SqlAndParamValues sqlAndParamValues = metaModel.getQuerySql(v,record);
         String sql = sqlAndParamValues.getSql();
-        String countSql = "select count(1) as CT from ("+ sql +")";
+        String countSql = "select count(1) as CT from ("+ sql +") as AA";
 
         int offset = (page.getPageNum()<2)?0:(page.getPageNum()-1)*page.getPageSize();
         sql =  sql + " limit " + offset + "," + page.getPageSize();
 
         Long total = jdbcTemplate.queryForObject(countSql,Long.class,sqlAndParamValues.getParams());
 
-        //todo 转换数据类型
+
         List<Map<String,Object>> data = jdbcTemplate.queryForList(sqlAndParamValues.getSql(),sqlAndParamValues.getParams());
+        data = convertQueryResultList(v,data);
         page.setList(data);
         page.setTotal(total);
         return page;

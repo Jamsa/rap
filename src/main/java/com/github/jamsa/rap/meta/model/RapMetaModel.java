@@ -44,7 +44,7 @@ public class RapMetaModel  extends BaseEntity<Integer> {
     public List<SqlAndParamValues> getDeleteByMainKeySqls(Object id){
         return getModelViewObjects().values().stream().sorted(Comparator.comparing(RapMetaModelViewObject::getViewType).reversed())
                 .map(this::getDeleteByMainKeySql)
-                .filter(StringUtils::isEmpty)
+                .filter(s->!StringUtils.isEmpty(s))
                 .map(s->new SqlAndParamValues(s,new Object[]{id})).collect(Collectors.toList());
 
     }
@@ -62,11 +62,16 @@ public class RapMetaModel  extends BaseEntity<Integer> {
                     List<String> fieldNames = new ArrayList();
                     List<String> fieldParams = new ArrayList();
                     List<Object> fieldValues = new ArrayList();
-                    vo.getViewFields().values().stream().filter(f->f.getFieldType()==ModelViewFieldType.TABLE_COLUMN && !f.isKeyField())
+                    vo.getViewFields().values().stream()
+                            .filter(f->f.getFieldType()==ModelViewFieldType.TABLE_COLUMN && f.getGenerator()!=ModelViewFieldGeneratorType.NATIVE) // 数据库列，且非数据库生成的字段
                             .forEach(f->{
                                 fieldNames.add(f.getFieldCode());
                                 fieldParams.add("?");
-                                fieldValues.add(record.get(f.getFieldAlias()));
+                                switch (f.getGenerator()){
+                                    case UUID: fieldValues.add(UUID.randomUUID());break;
+                                    default: fieldValues.add(record.get(f.getFieldAlias()));
+                                }
+
                             });
                     StringBuffer buf = new StringBuffer();
                     buf.append("insert into ").append(vo.getTableCode())
@@ -86,7 +91,7 @@ public class RapMetaModel  extends BaseEntity<Integer> {
                     List<Object> fieldValues = new ArrayList();
 
                     vo.getViewFields().values().stream()
-                            .filter(f->f.getFieldType()==ModelViewFieldType.TABLE_COLUMN && !f.isKeyField())
+                            .filter(f->f.getFieldType()==ModelViewFieldType.TABLE_COLUMN && !f.isKeyField() && f.getGenerator()==ModelViewFieldGeneratorType.INPUT)
                             .forEach(f->{
                                 fieldNames.add(f.getFieldCode()+" = ?");
                                 fieldValues.add(record.get(f.getFieldAlias()));
