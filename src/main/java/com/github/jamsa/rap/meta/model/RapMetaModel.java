@@ -48,6 +48,12 @@ public class RapMetaModel  extends BaseEntity<Integer> {
         configuration.setTemplateLoader(sqlTemplateLoader);
     }
 
+    public boolean isSubTableViewAlias(String name){
+        return this.getModelViewObjects().values().stream()
+                .filter(v->v.getViewType()==ModelViewObjectType.SUBTABLE && name.equals(v.getViewAlias()))
+                .findFirst().orElse(null)!=null;
+    }
+
     protected String processSqlTempalte(RapMetaModelViewObject v,Map record) throws RuntimeException{
         StringWriter writer = new StringWriter();
         try {
@@ -63,7 +69,7 @@ public class RapMetaModel  extends BaseEntity<Integer> {
         return Optional.ofNullable(v).filter(RapMetaModelViewObject::isDeletable)
                 .map(mv->mv.getViewType()==ModelViewObjectType.MAIN?mv.getKeyField():mv.getRefField())
                 //.map(RapMetaViewField::getTableField)
-                .map(tf->"delete from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?").orElse(null);
+                .map(tf->"deleteModelRecord from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?").orElse(null);
     }
 
     //private String[] deleteByPrimaryKeySqls=null;
@@ -78,7 +84,7 @@ public class RapMetaModel  extends BaseEntity<Integer> {
     public SqlAndParamValues getDeleteSql(RapMetaModelViewObject v, Object id){
         return Optional.ofNullable(v).filter(vo->!StringUtils.isEmpty(vo.getTableCode()) && vo.isDeletable())
                 .map(RapMetaViewObject::getKeyField)
-                .map(tf->new SqlAndParamValues("delete from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?",new Object[]{id}))
+                .map(tf->new SqlAndParamValues("deleteModelRecord from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?",new Object[]{id}))
                 .orElse(null);
     }
 

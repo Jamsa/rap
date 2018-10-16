@@ -28,7 +28,7 @@ public class MetaDataServiceTest extends BaseTest {
     @Test
     public void findByPrimaryKey() {
         MetaModelService metaModelService = metaService.getMetaModelService("RAP_LOV");
-        Map result = metaModelService.findByPrimaryKey("rapUserLov");
+        Map result = metaModelService.findModelRecordByKey("rapUserLov");
         System.out.println(result);
     }
 
@@ -40,7 +40,7 @@ public class MetaDataServiceTest extends BaseTest {
         pageInfo.setPageNum(1);
         Map condition = new HashMap();
         //condition.put("lovCode","rapUserLov");
-        PageInfo result = metaModelService.findByPage(condition,pageInfo);
+        PageInfo result = metaModelService.findModelRecordByPage(condition,pageInfo);
         System.out.println(result);
     }
 
@@ -51,7 +51,7 @@ public class MetaDataServiceTest extends BaseTest {
         record.put("lovCode","aaaa");
         record.put("lovName","aaaa");
 
-        record = metaModelService.save(record);
+        record = metaModelService.saveModelRecord(record);
         System.out.println(record);
     }
 
@@ -62,7 +62,7 @@ public class MetaDataServiceTest extends BaseTest {
         record.put("lovCode","aaaa");
         record.put("lovName","aaaabbbbb");
 
-        record = metaModelService.update(record);
+        record = metaModelService.updateModelRecord(record);
         System.out.println(record);
     }
 
@@ -71,13 +71,13 @@ public class MetaDataServiceTest extends BaseTest {
         MetaModelService metaModelService = metaService.getMetaModelService("RAP_LOV");
 
         this.save();
-        int count = metaModelService.deleteByPrimaryKey("aaaa");
+        int count = metaModelService.deleteModelRecordByKey("aaaa");
         System.out.println(count);
 
         this.save();
         Map record = new HashMap();
         record.put("lovCode","aaaa");
-        count = metaModelService.delete(record);
+        count = metaModelService.deleteModelRecord(record);
         System.out.println(count);
 
     }

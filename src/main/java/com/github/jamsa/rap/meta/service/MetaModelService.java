@@ -7,8 +7,8 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
-import javax.swing.text.html.Option;
 import java.sql.PreparedStatement;
+import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -20,25 +20,103 @@ public class MetaModelService {
     private JdbcTemplate jdbcTemplate;
 
     private RapMetaModel metaModel;
-    public MetaModelService(RapMetaModel metaModel,JdbcTemplate jdbcTemplate) {
+        public MetaModelService(RapMetaModel metaModel,JdbcTemplate jdbcTemplate) {
         this.metaModel = metaModel;
         this.jdbcTemplate = jdbcTemplate;
     }
 
-    //删除视图对象中的行
-    protected int deleteViewRecord(RapMetaModelViewObject viewObject,Object record){
-        Object id = (record instanceof Map)?((Map)record).get(viewObject.getKeyField().getFieldAlias()):record;
-        return Optional.ofNullable(id)
-                .map(key -> metaModel.getDeleteSql(viewObject,key))
-                .map(sp->jdbcTemplate.update(sp.getSql(),sp.getParams())).orElse(0);
+    public RapMetaModel getMetaModel() {
+        return metaModel;
     }
 
-    //删除模型记录及其子记录，参数为模型记录主键
-    public int deleteByPrimaryKey(Object id){
-        return metaModel.getDeleteByMainKeySqls(id).stream().mapToInt(sp -> jdbcTemplate.update(sp.getSql(),sp.getParams())).sum();
+    /**
+     * 将数据库查询结果转换为视图对象属性
+     * @param viewObject 视图对象
+     * @param record     数据库查询结果
+     * @return
+     */
+    protected Map convertQueryResult(RapMetaModelViewObject viewObject,Map record){
+        viewObject.getViewFields().values().stream().forEach(vf->{
+            record.put(vf.getFieldAlias(),record.get(vf.getFieldCode()));
+            record.remove(vf.getFieldCode());
+        });
+        return record;
     }
 
-    protected Map saveViewRecord(RapMetaModelViewObject viewObject, Map record){
+    /**
+     * 将数据库查询结果集转换为视图对象结果集
+     * @param viewObject 视图对象
+     * @param result 数据库查询结果集
+     * @return
+     */
+    protected List<Map<String,Object>> convertQueryResultList(RapMetaModelViewObject viewObject,List<Map<String,Object>> result){
+        Optional.ofNullable(result).map(l->{
+            l.forEach(r->{
+                convertQueryResult(viewObject,r);
+            });
+            return l;
+        });
+        return result;
+    }
+
+    protected Map convertRequestParams(RapMetaModelViewObject viewObject,Map params){ //<String,String>
+        viewObject.getViewFields().values().stream().forEach(f->{
+            String value = (String)params.get(f.getFieldAlias());
+            Object result = value;
+            if(value!=null) {
+                try {
+                    switch (f.getDataType()) {
+                        case INTEGER:
+                            result = Integer.parseInt(value);
+                            break;
+                        case FLOAT:
+                            result = Float.parseFloat(value);
+                            break;
+                        case DOUBLE:
+                            result = Double.parseDouble(value);
+                            break;
+                        case DATE:
+                            result = new SimpleDateFormat("yyyy-MM-dd").parse(value);
+                            break;
+                        case TIMESTAMP:
+                            result = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value);
+                            break;
+                    }
+                    params.put(f.getFieldAlias(), result);
+                }catch (Exception e){
+                    e.printStackTrace();
+                }
+            }
+        });
+        return params;
+    }
+
+    protected Map convertRequestParams(String viewAlias,Map params){ //<String,String>
+        metaModel.getModelViewObjects().values().stream().filter(v->viewAlias.equals(v.getViewAlias())).forEach(v->convertQueryResult(v,params));
+        return params;
+    }
+
+    protected Map convertRequestParams(Map params){
+        metaModel.getModelViewObjects().values().stream().forEach(v->{
+            if(v.getViewType()==ModelViewObjectType.MAIN) convertQueryResult(v,params);
+            else{
+                Map viewParams = (Map)params.get(v.getViewAlias());
+                Arrays.stream(new String[]{Constant.RECORD_ADD_ROWS_KEY,Constant.RECORD_DELETE_ROWS_KEY,Constant.RECORD_UPDATE_ROWS_KEY}).forEach(s->{
+                            List<Map> records = (List<Map>)viewParams.get(s);
+                            records.stream().forEach(r->convertRequestParams(v,r));
+                        });
+            }
+        });
+        return params;
+    }
+
+    /**
+     * 保存视图对象的记录
+     * @param viewObject 视图对象
+     * @param record 行记录
+     * @return
+     */
+    protected Map save(RapMetaModelViewObject viewObject, Map record){
         if(viewObject!=null&&viewObject.isCreatable()&&viewObject.getTableCode()!=null){
             SqlAndParamValues sqlAndParamValues = metaModel.getSaveSql(viewObject,record);
             KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -62,9 +140,14 @@ public class MetaModelService {
         return record;
     }
 
-    public Map save(Map record){
+    /**
+     * 保存模板相关的所有视图对象的记录，包括针对各个子表的增、删、改
+     * @param record 包含主表、附表及各子表的记录（addRows,deleteRows,updateRows）
+     * @return
+     */
+    public Map saveModelRecord(Map record){
         //保存主表
-        saveViewRecord(metaModel.getMainViewObject(),record);
+        save(metaModel.getMainViewObject(),record);
 
         //主表主键
         Object keyValue = record.get(metaModel.getMainViewObject().getKeyField().getFieldAlias());
@@ -72,7 +155,7 @@ public class MetaModelService {
         //保存附表
         metaModel.getModelViewObjects().values().stream().filter(v->v.getViewType()==ModelViewObjectType.ADDITIONAL).forEach(v->{
             record.put(v.getRefField().getFieldAlias(),keyValue); //附表关联字段
-            saveViewRecord(v,record);
+            save(v,record);
         });
 
         //保存子表
@@ -83,7 +166,7 @@ public class MetaModelService {
                 ((List) viewRecords).stream().forEach(row->{
                     Map rowRecord = (Map)row;
                     rowRecord.put(v.getRefField().getFieldAlias(),keyValue); //子表关联字段
-                    saveViewRecord(v, rowRecord);
+                    save(v, rowRecord);
                 });
             }
         });
@@ -91,25 +174,12 @@ public class MetaModelService {
         return record;
     }
 
-    protected Map convertQueryResult(RapMetaModelViewObject viewObject,Map record){
-        viewObject.getViewFields().values().stream().forEach(vf->{
-            record.put(vf.getFieldAlias(),record.get(vf.getFieldCode()));
-            record.remove(vf.getFieldCode());
-        });
-        return record;
-    }
-
-    protected List<Map<String,Object>> convertQueryResultList(RapMetaModelViewObject viewObject,List<Map<String,Object>> result){
-        Optional.ofNullable(result).map(l->{
-            l.forEach(r->{
-                convertQueryResult(viewObject,r);
-            });
-            return l;
-        });
-        return result;
-    }
-
-    public Map findByPrimaryKey(Object id){
+    /**
+     * 根据主键查询主表记录
+     * @param id 主表记录id
+     * @return
+     */
+    public Map findModelRecordByKey(Object id){
         return Optional.ofNullable(metaModel.getMainViewObject()).map(RapMetaViewObject::getKeyField)
                 .map(f->{
                     Map<String,Object> params = new HashMap();
@@ -120,21 +190,31 @@ public class MetaModelService {
                 }).orElse(null);
     }
 
-    protected Map updateViewRecord(RapMetaModelViewObject viewObject, Map record){
+    /**
+     * 更新视图对象记录
+     * @param viewObject 视图对象
+     * @param record 视图对象行
+     * @return
+     */
+    protected Map update(RapMetaModelViewObject viewObject, Map record){
         SqlAndParamValues sqlAndParamValues = metaModel.getUpdateSql(viewObject,record);
         jdbcTemplate.update(sqlAndParamValues.getSql(),sqlAndParamValues.getParams());
         return record;
     }
 
-
-    public Map update(Map record){
+    /**
+     * 更新模板相关各视图对象记录
+     * @param record  包含主表、附表及各子表的记录（addRows,deleteRows,updateRows）
+     * @return
+     */
+    public Map updateModelRecord(Map record){
         //主表主键
         Object keyValue = record.get(metaModel.getMainViewObject().getKeyField().getFieldAlias());
 
-        updateViewRecord(metaModel.getMainViewObject(),record);
+        update(metaModel.getMainViewObject(),record);
 
         metaModel.getModelViewObjects().values().stream().filter(v->v.getViewType()==ModelViewObjectType.ADDITIONAL).forEach(v->{
-            updateViewRecord(v,record);
+            update(v,record);
         });
 
         //更新子表
@@ -145,7 +225,7 @@ public class MetaModelService {
                 ((List) viewRecords).stream().forEach(row->{
                     Map rowRecord = (Map)row;
                     rowRecord.put(v.getRefField().getFieldAlias(),keyValue); //子表关联字段
-                    saveViewRecord(v, rowRecord);
+                    save(v, rowRecord);
                 });
             }
 
@@ -153,7 +233,7 @@ public class MetaModelService {
             if(viewRecords!=null&&viewRecords instanceof List) {
                 ((List) viewRecords).stream().forEach(row->{
                     Map rowRecord = (Map)row;
-                    updateViewRecord(v, rowRecord);
+                    update(v, rowRecord);
                 });
             }
 
@@ -161,7 +241,7 @@ public class MetaModelService {
             if(viewRecords!=null&&viewRecords instanceof List) {
                 ((List) viewRecords).stream().forEach(row->{
                     Map rowRecord = (Map)row;
-                    deleteViewRecord(v, rowRecord);
+                    delete(v, rowRecord);
                 });
             }
 
@@ -170,26 +250,109 @@ public class MetaModelService {
         return record;
     }
 
-    //删除模型记录及其子记录，参数为模型记录
-    public int delete(Map record){
+    /**
+     * 删除-视图对象中的行
+     * @param viewObject 视图对象
+     * @param record 视图对象行
+     * @return
+     */
+    protected int delete(RapMetaModelViewObject viewObject, Object record){
+        Object id = (record instanceof Map)?((Map)record).get(viewObject.getKeyField().getFieldAlias()):record;
+        return Optional.ofNullable(id)
+                .map(key -> metaModel.getDeleteSql(viewObject,key))
+                .map(sp->jdbcTemplate.update(sp.getSql(),sp.getParams())).orElse(0);
+    }
+
+    /**
+     * 删除-视图对象中的行
+     * @param viewAlias 视图对象别名
+     * @param record 视图对象行
+     * @return
+     */
+    public int delete(String viewAlias, Object record){
+        return metaModel.getModelViewObjects().values().stream()
+                .filter(v->viewAlias.equals(v.getViewAlias()))
+                .map(v-> delete(v,record))
+                .findFirst().orElse(0);
+    }
+
+    /**
+     * 删除模型各视图对象中的行
+     * @param id 主表主键
+     * @return
+     */
+    public int deleteModelRecordByKey(Object id){
+        return metaModel.getDeleteByMainKeySqls(id).stream().mapToInt(sp -> jdbcTemplate.update(sp.getSql(),sp.getParams())).sum();
+    }
+
+    /**
+     * 删除模型各视图对象中的行
+     * @param record 模型行对象
+     * @return
+     */
+    public int deleteModelRecord(Map record){
         return Optional.ofNullable(metaModel.getMainViewObject())
                 .map(RapMetaViewObject::getKeyField)
                 .map(RapMetaViewField::getFieldAlias)
-                .map(key -> record.get(key)).map(this::deleteByPrimaryKey).orElse(0);
+                .map(key -> record.get(key)).map(this::deleteModelRecordByKey).orElse(0);
 
     }
 
-    public List<Map<String,Object>> findByCondition(Map record){
+    /**
+     * 查询模型主视图对象
+     * @param record 查询条件
+     * @return
+     */
+    public List<Map<String,Object>> findModelRecordByCondition(Map record) {
         RapMetaModelViewObject v = metaModel.getMainViewObject();
+        return findByCondition(v,record);
+    }
 
+    /**
+     * 查询视图对象
+     * @param v 视图对象
+     * @param record 查询条件
+     * @return
+     */
+    protected List<Map<String,Object>> findByCondition(RapMetaModelViewObject v, Map record){
         SqlAndParamValues sqlAndParamValues = metaModel.getQuerySql(v,record);
 
         List result = jdbcTemplate.queryForList(sqlAndParamValues.getSql(),sqlAndParamValues.getParams());
         return convertQueryResultList(v,result);
     }
 
-    public PageInfo findByPage(Map record, PageInfo page){
+    /**
+     * 查询视图对象
+     * @param viewAlias 模型视图对象别名
+     * @param record 查询条件
+     * @return
+     */
+    public List<Map<String,Object>> findByCondition(String viewAlias, Map record){
+        return metaModel.getModelViewObjects().values().stream()
+                .filter(v->viewAlias.equals(v.getViewAlias()))
+                .map(v-> findByCondition(v,record))
+                .findFirst().orElse(null);
+    }
+
+    /**
+     * 分页查询模型主视图对象
+     * @param record 查询条件
+     * @param page 分页条件
+     * @return
+     */
+    public PageInfo findModelRecordByPage(Map record, PageInfo page){
         RapMetaModelViewObject v = metaModel.getMainViewObject();
+        return findByPage(v,record,page);
+    }
+
+    /**
+     * 分页查询视图对象
+     * @param v 视图对象
+     * @param record 查询条件
+     * @param page 分页条件
+     * @return
+     */
+    protected PageInfo findByPage(RapMetaModelViewObject v, Map record, PageInfo page){
 
         SqlAndParamValues sqlAndParamValues = metaModel.getQuerySql(v,record);
         String sql = sqlAndParamValues.getSql();
@@ -200,11 +363,24 @@ public class MetaModelService {
 
         Long total = jdbcTemplate.queryForObject(countSql,Long.class,sqlAndParamValues.getParams());
 
-
         List<Map<String,Object>> data = jdbcTemplate.queryForList(sqlAndParamValues.getSql(),sqlAndParamValues.getParams());
         data = convertQueryResultList(v,data);
         page.setList(data);
         page.setTotal(total);
         return page;
+    }
+
+    /**
+     * 分页查询视图对象
+     * @param viewAlias 模型视图对象别名
+     * @param record 查询条件
+     * @param page 分页条件
+     * @return
+     */
+    public PageInfo findByPage(String viewAlias, Map record, PageInfo page){
+        return metaModel.getModelViewObjects().values().stream()
+                .filter(v->viewAlias.equals(v.getViewAlias()))
+                .map(v-> findByPage(v,record,page))
+                .findFirst().orElse(null);
     }
 }

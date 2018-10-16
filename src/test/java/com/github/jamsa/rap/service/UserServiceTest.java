@@ -27,7 +27,7 @@ public class UserServiceTest extends BaseTest {
         //u.setUsername("xxxxx1");
         u.setFullname("bbb");
         userService.update(u);
-        //userService.delete(u);
+        //userService.deleteModelRecord(u);
         for(int i = 0;i<20;i++){
             u = new User();
             u.setUsername("xxxxx");
