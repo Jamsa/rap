@@ -2,6 +2,7 @@ package com.github.jamsa.rap.meta.controller;
 
 import com.github.jamsa.rap.meta.model.RapMetaModel;
 import com.github.jamsa.rap.meta.service.MetaModelService;
+import com.github.jamsa.rap.meta.util.JsonUtil;
 import com.github.pagehelper.PageInfo;
 import org.apache.shiro.authz.AuthorizationException;
 
@@ -12,6 +13,7 @@ import org.springframework.validation.Errors;
 import org.springframework.validation.ObjectError;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -50,7 +52,7 @@ public class MetaModelController {
         return result.toArray(new String[result.size()]);
     }
 
-    public Object dispatch(HttpServletRequest request){
+    public Object dispatch(HttpServletRequest request) throws IOException {
         String requestMetod = request.getMethod();
 
         String[] uriSegments = getUriSegments(request);
@@ -106,6 +108,9 @@ public class MetaModelController {
 
     //@RequestMapping(value = "",method = {RequestMethod.GET})
     public ResponseEntity findByPage(HttpServletRequest request){
+
+        //new JsonFactory().createParser(request.getReader())
+
         return findByPage(request,null);
     }
 
@@ -119,7 +124,11 @@ public class MetaModelController {
     public ResponseEntity findByPage(HttpServletRequest request,String viewAlias){
         checkPermissions("view");
         Map condition = getParameterMap(request);
+        condition = JsonUtil.convertRequestParams(metaModel,condition);
         PageInfo page = new PageInfo();
+
+        //todo
+        //request.getParameter("pageSize")
 
         if(page.getPageSize()==0){
             page.setPageSize(10);
@@ -138,6 +147,8 @@ public class MetaModelController {
     //@RequestMapping(value = "/{id}",method = RequestMethod.GET)
     public ResponseEntity findByPrimaryKey(HttpServletRequest request,String id){
         checkPermissions("view");
+
+        //todo id改为object类型，在调用的地方进行类型转换
         Object result = metaModelService.findModelRecordByKey(id);
         if(result!=null){
             return ResponseEntity.ok(result);
@@ -160,20 +171,19 @@ public class MetaModelController {
     }
 
     //@RequestMapping(value = "",method = RequestMethod.POST)
-    public ResponseEntity save(HttpServletRequest request){
+    public ResponseEntity save(HttpServletRequest request) throws IOException {
         checkPermissions("add");
-        //TODO
-        Map record = new HashMap();
+
+        Map record = JsonUtil.parseRequestJson(request.getReader(),metaModel);
 
         Object result= metaModelService.saveModelRecord(record);
         return ResponseEntity.ok(result);
     }
 
     //@RequestMapping(value = "/{id}",method = RequestMethod.PUT)
-    public ResponseEntity update(HttpServletRequest request){
+    public ResponseEntity update(HttpServletRequest request) throws IOException {
         checkPermissions("edit");
-        //TODO
-        Map record = new HashMap();
+        Map record = JsonUtil.parseRequestJson(request.getReader(),metaModel);
         Object result = metaModelService.updateModelRecord(record);
         return ResponseEntity.ok(result);
     }
@@ -188,4 +198,6 @@ public class MetaModelController {
             return ResponseEntity.notFound().build();
         }
     }
+
+
 }

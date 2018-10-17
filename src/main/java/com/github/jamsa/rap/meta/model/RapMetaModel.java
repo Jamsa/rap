@@ -1,20 +1,19 @@
 package com.github.jamsa.rap.meta.model;
 
 import com.github.jamsa.rap.core.model.BaseEntity;
-import freemarker.cache.StringTemplateLoader;
-import freemarker.template.Configuration;
+import com.github.jamsa.rap.meta.util.TemplateUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.util.StringUtils;
 
-import java.io.StringWriter;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class RapMetaModel  extends BaseEntity<Integer> {
-    protected static final Logger logger = LoggerFactory.getLogger(RapMetaModel.class);
+
+    private static final Logger logger = LoggerFactory.getLogger(RapMetaModel.class);
 
     private Long modelId;
     private Long appId;
@@ -39,13 +38,9 @@ public class RapMetaModel  extends BaseEntity<Integer> {
     //getStatusFields(statusCode) 获取某个状态下所有字段信息，字段的属性中包含（状态属性）
     //public Map<String,> getDefaultStatusFields()
 
+    private TemplateUtil sqlTemplateUtil = new TemplateUtil();
 
-    private Configuration configuration;
-    private StringTemplateLoader sqlTemplateLoader;
     public RapMetaModel() {
-        configuration = new Configuration(Configuration.DEFAULT_INCOMPATIBLE_IMPROVEMENTS);
-        sqlTemplateLoader = new StringTemplateLoader();
-        configuration.setTemplateLoader(sqlTemplateLoader);
     }
 
     public boolean isSubTableViewAlias(String name){
@@ -54,28 +49,18 @@ public class RapMetaModel  extends BaseEntity<Integer> {
                 .findFirst().orElse(null)!=null;
     }
 
-    protected String processSqlTempalte(RapMetaModelViewObject v,Map record) throws RuntimeException{
-        StringWriter writer = new StringWriter();
-        try {
-            configuration.getTemplate(v.getObjectCode()).process(record,writer);
-        } catch (Exception e) {
-            logger.error("SQL模板解析出错",e);
-            throw new RuntimeException("SQL模板解析出错",e);
-        }
-        return writer.toString();
-    }
 
     protected String getDeleteByMainKeySql(RapMetaModelViewObject v){
         return Optional.ofNullable(v).filter(RapMetaModelViewObject::isDeletable)
                 .map(mv->mv.getViewType()==ModelViewObjectType.MAIN?mv.getKeyField():mv.getRefField())
                 //.map(RapMetaViewField::getTableField)
-                .map(tf->"deleteModelRecord from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?").orElse(null);
+                .map(tf->"delete from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?").orElse(null);
     }
 
     //private String[] deleteByPrimaryKeySqls=null;
     public List<SqlAndParamValues> getDeleteByMainKeySqls(Object id){
         return getModelViewObjects().values().stream().sorted(Comparator.comparing(RapMetaModelViewObject::getViewType).reversed())
-                .map(this::getDeleteByMainKeySql)
+                .map(v->getDeleteByMainKeySql(v))
                 .filter(s->!StringUtils.isEmpty(s))
                 .map(s->new SqlAndParamValues(s,new Object[]{id})).collect(Collectors.toList());
 
@@ -84,7 +69,7 @@ public class RapMetaModel  extends BaseEntity<Integer> {
     public SqlAndParamValues getDeleteSql(RapMetaModelViewObject v, Object id){
         return Optional.ofNullable(v).filter(vo->!StringUtils.isEmpty(vo.getTableCode()) && vo.isDeletable())
                 .map(RapMetaViewObject::getKeyField)
-                .map(tf->new SqlAndParamValues("deleteModelRecord from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?",new Object[]{id}))
+                .map(tf->new SqlAndParamValues("delete from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?",new Object[]{id}))
                 .orElse(null);
     }
 
@@ -156,7 +141,7 @@ public class RapMetaModel  extends BaseEntity<Integer> {
         List<Object> fieldValues = new ArrayList();
 
         //String sql = v.getObjectSql();
-        String sql = processSqlTempalte(v,record);
+        String sql = sqlTemplateUtil.process(v,record);
 
         Matcher matcher = sqlParamPattern.matcher(sql);
         while (matcher.find()){
@@ -232,7 +217,7 @@ public class RapMetaModel  extends BaseEntity<Integer> {
         });
 
         //创建SQL模板
-        sqlTemplateLoader.putTemplate(modelViewObject.getObjectCode(), modelViewObject.getObjectSql());
+        sqlTemplateUtil.putTemplate(modelViewObject.getObjectCode(), modelViewObject.getObjectSql());
     }
 
     public Map<String, RapMetaModelStatus> getModelStatus() {

@@ -32,4 +32,8 @@ public class MetaService {
         }
         return metaModelService;
     }
+
+    public void removeMetaModelService(String modelCode){
+        metaModelServices.remove(modelCode);
+    }
 }

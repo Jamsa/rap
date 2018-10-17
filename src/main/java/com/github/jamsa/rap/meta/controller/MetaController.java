@@ -1,7 +1,5 @@
 package com.github.jamsa.rap.meta.controller;
 
-import com.github.jamsa.rap.meta.model.RapMetaModel;
-import com.github.jamsa.rap.meta.service.MetaDataService;
 import com.github.jamsa.rap.meta.service.MetaService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -9,6 +7,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import javax.servlet.http.HttpServletRequest;
+import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -25,8 +24,15 @@ public class MetaController {
     @Autowired
     protected MetaService metaService;
 
+    @RequestMapping("/meta-api/refresh/{modelCode}")
+    public Object refresh(@PathVariable("modelCode") String modelCode, HttpServletRequest request) throws IOException {
+        metaModelControllers.remove(modelCode);
+        metaService.removeMetaModelService(modelCode);
+        return null;
+    }
+
     @RequestMapping("/meta-api/{modelCode}/**")
-    public Object dispatch(@PathVariable("modelCode") String modelCode, HttpServletRequest request){
+    public Object dispatch(@PathVariable("modelCode") String modelCode, HttpServletRequest request) throws IOException {
         MetaModelController controller = metaModelControllers.get(modelCode);
         if(controller==null){
             controller = new MetaModelController(modelCode, metaService.getMetaModelService(modelCode));

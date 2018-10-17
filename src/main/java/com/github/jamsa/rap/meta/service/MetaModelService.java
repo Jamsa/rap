@@ -59,57 +59,6 @@ public class MetaModelService {
         return result;
     }
 
-    protected Map convertRequestParams(RapMetaModelViewObject viewObject,Map params){ //<String,String>
-        viewObject.getViewFields().values().stream().forEach(f->{
-            String value = (String)params.get(f.getFieldAlias());
-            Object result = value;
-            if(value!=null) {
-                try {
-                    switch (f.getDataType()) {
-                        case INTEGER:
-                            result = Integer.parseInt(value);
-                            break;
-                        case FLOAT:
-                            result = Float.parseFloat(value);
-                            break;
-                        case DOUBLE:
-                            result = Double.parseDouble(value);
-                            break;
-                        case DATE:
-                            result = new SimpleDateFormat("yyyy-MM-dd").parse(value);
-                            break;
-                        case TIMESTAMP:
-                            result = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(value);
-                            break;
-                    }
-                    params.put(f.getFieldAlias(), result);
-                }catch (Exception e){
-                    e.printStackTrace();
-                }
-            }
-        });
-        return params;
-    }
-
-    protected Map convertRequestParams(String viewAlias,Map params){ //<String,String>
-        metaModel.getModelViewObjects().values().stream().filter(v->viewAlias.equals(v.getViewAlias())).forEach(v->convertQueryResult(v,params));
-        return params;
-    }
-
-    protected Map convertRequestParams(Map params){
-        metaModel.getModelViewObjects().values().stream().forEach(v->{
-            if(v.getViewType()==ModelViewObjectType.MAIN) convertQueryResult(v,params);
-            else{
-                Map viewParams = (Map)params.get(v.getViewAlias());
-                Arrays.stream(new String[]{Constant.RECORD_ADD_ROWS_KEY,Constant.RECORD_DELETE_ROWS_KEY,Constant.RECORD_UPDATE_ROWS_KEY}).forEach(s->{
-                            List<Map> records = (List<Map>)viewParams.get(s);
-                            records.stream().forEach(r->convertRequestParams(v,r));
-                        });
-            }
-        });
-        return params;
-    }
-
     /**
      * 保存视图对象的记录
      * @param viewObject 视图对象

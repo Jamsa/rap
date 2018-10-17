@@ -12,7 +12,7 @@ public class RapMetaViewField  extends BaseEntity<Integer> {
     private String fieldCode;
     private String fieldAlias;
 
-    private JDBCType dataType;
+    private JDBCType dataType = JDBCType.VARCHAR;
     private ModelViewFieldType fieldType=ModelViewFieldType.TABLE_COLUMN;
     //private Long tableFieldId;
     private Long viewObjectId;
