@@ -17,8 +17,7 @@ public class MetaModelService {
 
     private JdbcTemplate jdbcTemplate;
 
-    //独立出去
-    private MetaTransactionManager tx;
+    protected MetaTransactionManager tx;
 
     public void setTransactionManager(MetaTransactionManager transactionManager) {
         this.tx = transactionManager;

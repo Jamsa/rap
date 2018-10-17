@@ -4,6 +4,9 @@ import org.springframework.http.ResponseEntity
 
 import javax.servlet.http.HttpServletRequest
 
+/**
+ * 测试热加载控制器的脚本
+ */
 class RAP_LOVController extends MetaModelController{
     RAP_LOVController(String modelCode, MetaModelService metaModelService) {
         super(modelCode, metaModelService)

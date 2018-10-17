@@ -12,7 +12,7 @@ public class MetaTransactionManager {
     @Autowired
     private PlatformTransactionManager transactionManager;
 
-    protected <T> T execute(Class<T> clazz,int propagationBehavior, MetaTransactionFunction<T> tx) throws RuntimeException{
+    public <T> T execute(Class<T> clazz,int propagationBehavior, MetaTransactionFunction<T> tx) throws RuntimeException{
         TransactionDefinition def = new DefaultTransactionDefinition(propagationBehavior);
 
         TransactionStatus status = transactionManager.getTransaction(def);
@@ -26,7 +26,7 @@ public class MetaTransactionManager {
         }
     }
 
-    protected <T> T execute(Class<T> clazz,MetaTransactionFunction<T> tx) throws RuntimeException{
+    public <T> T execute(Class<T> clazz,MetaTransactionFunction<T> tx) throws RuntimeException{
         return execute(clazz,TransactionDefinition.PROPAGATION_REQUIRED,tx);
     }
 
