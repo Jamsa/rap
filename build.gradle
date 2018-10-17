@@ -62,6 +62,8 @@ dependencies {
     compile ("io.jsonwebtoken:jjwt:0.8.0")
     compile ("org.freemarker:freemarker:2.3.28")
 
+    compile ("org.codehaus.groovy:groovy-all:2.4.15")
+
     //compile("org.ehcache:ehcache")
 
 

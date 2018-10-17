@@ -55,3 +55,7 @@ jwt:
     secret: mySecret
     expiration: 86400 #一天
 
+
+rap:
+  meta:
+    scriptDir: /Users/zhujie/Documents/devel/Java/rap/src/main/groovy
