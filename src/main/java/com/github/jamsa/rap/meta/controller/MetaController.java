@@ -1,12 +1,10 @@
 package com.github.jamsa.rap.meta.controller;
 
-import com.github.jamsa.rap.meta.model.RapMetaModel;
 import com.github.jamsa.rap.meta.service.MetaModelService;
 import com.github.jamsa.rap.meta.service.MetaService;
 import groovy.lang.GroovyClassLoader;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;

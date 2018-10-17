@@ -22,7 +22,6 @@ import java.util.regex.Pattern;
  * 元模块控制器，由MetaController实例化
  */
 public class MetaModelController {
-    private MetaModelControllerListener metaModelControllerListener;
     private String modelCode;
     private MetaModelService metaModelService;
     private RapMetaModel metaModel;

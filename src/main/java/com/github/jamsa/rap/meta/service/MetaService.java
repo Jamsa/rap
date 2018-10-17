@@ -19,6 +19,8 @@ public class MetaService {
     private MetaDataService metaDataService;
     @Autowired
     private JdbcTemplate jdbcTemplate;
+    @Autowired
+    private MetaTransactionManager transactionManager;
 
     /**
      * 存放各个模块的服务对象
@@ -46,8 +48,10 @@ public class MetaService {
                 }
             }
 
-            if(metaModelService!=null)
-                metaModelServices.put(modelCode,metaModelService);
+            if(metaModelService!=null) {
+                metaModelService.setTransactionManager(transactionManager);
+                metaModelServices.put(modelCode, metaModelService);
+            }
         }
         return metaModelService;
     }

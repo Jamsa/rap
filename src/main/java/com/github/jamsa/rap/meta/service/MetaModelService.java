@@ -8,7 +8,6 @@ import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
 
 import java.sql.PreparedStatement;
-import java.text.SimpleDateFormat;
 import java.util.*;
 
 /**
@@ -16,8 +15,14 @@ import java.util.*;
  */
 public class MetaModelService {
 
-    protected MetaModelServiceListener metaModelServiceListener;
     private JdbcTemplate jdbcTemplate;
+
+    //独立出去
+    private MetaTransactionManager tx;
+
+    public void setTransactionManager(MetaTransactionManager transactionManager) {
+        this.tx = transactionManager;
+    }
 
     private RapMetaModel metaModel;
         public MetaModelService(RapMetaModel metaModel,JdbcTemplate jdbcTemplate) {
@@ -66,6 +71,7 @@ public class MetaModelService {
      * @return
      */
     protected Map save(RapMetaModelViewObject viewObject, Map record){
+        return tx.execute(Map.class,()->{
         if(viewObject!=null&&viewObject.isCreatable()&&viewObject.getTableCode()!=null){
             SqlAndParamValues sqlAndParamValues = metaModel.getSaveSql(viewObject,record);
             KeyHolder keyHolder = new GeneratedKeyHolder();
@@ -86,7 +92,9 @@ public class MetaModelService {
                 record.put(f.getFieldAlias(),keyHolder.getKeys().get(fieldCode));
             });
         }
-        return record;
+            return record;
+        });
+
     }
 
     /**
@@ -95,32 +103,34 @@ public class MetaModelService {
      * @return
      */
     public Map saveModelRecord(Map record){
-        //保存主表
-        save(metaModel.getMainViewObject(),record);
+        return tx.execute(Map.class,()->{
+            //保存主表
+            save(metaModel.getMainViewObject(), record);
 
-        //主表主键
-        Object keyValue = record.get(metaModel.getMainViewObject().getKeyField().getFieldAlias());
+            //主表主键
+            Object keyValue = record.get(metaModel.getMainViewObject().getKeyField().getFieldAlias());
 
-        //保存附表
-        metaModel.getModelViewObjects().values().stream().filter(v->v.getViewType()==ModelViewObjectType.ADDITIONAL).forEach(v->{
-            record.put(v.getRefField().getFieldAlias(),keyValue); //附表关联字段
-            save(v,record);
+            //保存附表
+            metaModel.getModelViewObjects().values().stream().filter(v -> v.getViewType() == ModelViewObjectType.ADDITIONAL).forEach(v -> {
+                record.put(v.getRefField().getFieldAlias(), keyValue); //附表关联字段
+                save(v, record);
+            });
+
+            //保存子表
+            metaModel.getModelViewObjects().values().stream().filter(v -> v.getViewType() == ModelViewObjectType.SUBTABLE).forEach(v -> {
+                Map viewOperations = (Map) record.get(v.getViewAlias());
+                Object viewRecords = viewOperations.get(Constant.RECORD_ADD_ROWS_KEY);
+                if (viewRecords != null && viewRecords instanceof List) {
+                    ((List) viewRecords).stream().forEach(row -> {
+                        Map rowRecord = (Map) row;
+                        rowRecord.put(v.getRefField().getFieldAlias(), keyValue); //子表关联字段
+                        save(v, rowRecord);
+                    });
+                }
+            });
+            return record;
         });
 
-        //保存子表
-        metaModel.getModelViewObjects().values().stream().filter(v->v.getViewType()==ModelViewObjectType.SUBTABLE).forEach(v->{
-            Map viewOperations = (Map)record.get(v.getViewAlias());
-            Object viewRecords = viewOperations.get(Constant.RECORD_ADD_ROWS_KEY);
-            if(viewRecords!=null&&viewRecords instanceof List) {
-                ((List) viewRecords).stream().forEach(row->{
-                    Map rowRecord = (Map)row;
-                    rowRecord.put(v.getRefField().getFieldAlias(),keyValue); //子表关联字段
-                    save(v, rowRecord);
-                });
-            }
-        });
-
-        return record;
     }
 
     /**
@@ -146,9 +156,12 @@ public class MetaModelService {
      * @return
      */
     protected Map update(RapMetaModelViewObject viewObject, Map record){
-        SqlAndParamValues sqlAndParamValues = metaModel.getUpdateSql(viewObject,record);
-        jdbcTemplate.update(sqlAndParamValues.getSql(),sqlAndParamValues.getParams());
-        return record;
+        return tx.execute(Map.class,()->{
+            SqlAndParamValues sqlAndParamValues = metaModel.getUpdateSql(viewObject, record);
+            jdbcTemplate.update(sqlAndParamValues.getSql(), sqlAndParamValues.getParams());
+            return record;
+        });
+
     }
 
     /**
@@ -157,46 +170,49 @@ public class MetaModelService {
      * @return
      */
     public Map updateModelRecord(Map record){
-        //主表主键
-        Object keyValue = record.get(metaModel.getMainViewObject().getKeyField().getFieldAlias());
+        return tx.execute(Map.class,()->{
+            //主表主键
+            Object keyValue = record.get(metaModel.getMainViewObject().getKeyField().getFieldAlias());
 
-        update(metaModel.getMainViewObject(),record);
+            update(metaModel.getMainViewObject(), record);
 
-        metaModel.getModelViewObjects().values().stream().filter(v->v.getViewType()==ModelViewObjectType.ADDITIONAL).forEach(v->{
-            update(v,record);
+            metaModel.getModelViewObjects().values().stream().filter(v -> v.getViewType() == ModelViewObjectType.ADDITIONAL).forEach(v -> {
+                update(v, record);
+            });
+
+            //更新子表
+            metaModel.getModelViewObjects().values().stream().filter(v -> v.getViewType() == ModelViewObjectType.SUBTABLE).forEach(v -> {
+                Map viewOperations = (Map) record.get(v.getViewAlias());
+                Object viewRecords = viewOperations.get(Constant.RECORD_ADD_ROWS_KEY);
+                if (viewRecords != null && viewRecords instanceof List) {
+                    ((List) viewRecords).stream().forEach(row -> {
+                        Map rowRecord = (Map) row;
+                        rowRecord.put(v.getRefField().getFieldAlias(), keyValue); //子表关联字段
+                        save(v, rowRecord);
+                    });
+                }
+
+                viewRecords = viewOperations.get(Constant.RECORD_UPDATE_ROWS_KEY);
+                if (viewRecords != null && viewRecords instanceof List) {
+                    ((List) viewRecords).stream().forEach(row -> {
+                        Map rowRecord = (Map) row;
+                        update(v, rowRecord);
+                    });
+                }
+
+                viewRecords = viewOperations.get(Constant.RECORD_DELETE_ROWS_KEY);
+                if (viewRecords != null && viewRecords instanceof List) {
+                    ((List) viewRecords).stream().forEach(row -> {
+                        Map rowRecord = (Map) row;
+                        delete(v, rowRecord);
+                    });
+                }
+
+            });
+            return record;
         });
 
-        //更新子表
-        metaModel.getModelViewObjects().values().stream().filter(v->v.getViewType()==ModelViewObjectType.SUBTABLE).forEach(v->{
-            Map viewOperations = (Map)record.get(v.getViewAlias());
-            Object viewRecords = viewOperations.get(Constant.RECORD_ADD_ROWS_KEY);
-            if(viewRecords!=null&&viewRecords instanceof List) {
-                ((List) viewRecords).stream().forEach(row->{
-                    Map rowRecord = (Map)row;
-                    rowRecord.put(v.getRefField().getFieldAlias(),keyValue); //子表关联字段
-                    save(v, rowRecord);
-                });
-            }
 
-            viewRecords = viewOperations.get(Constant.RECORD_UPDATE_ROWS_KEY);
-            if(viewRecords!=null&&viewRecords instanceof List) {
-                ((List) viewRecords).stream().forEach(row->{
-                    Map rowRecord = (Map)row;
-                    update(v, rowRecord);
-                });
-            }
-
-            viewRecords = viewOperations.get(Constant.RECORD_DELETE_ROWS_KEY);
-            if(viewRecords!=null&&viewRecords instanceof List) {
-                ((List) viewRecords).stream().forEach(row->{
-                    Map rowRecord = (Map)row;
-                    delete(v, rowRecord);
-                });
-            }
-
-        });
-
-        return record;
     }
 
     /**
@@ -206,10 +222,13 @@ public class MetaModelService {
      * @return
      */
     protected int delete(RapMetaModelViewObject viewObject, Object record){
-        Object id = (record instanceof Map)?((Map)record).get(viewObject.getKeyField().getFieldAlias()):record;
-        return Optional.ofNullable(id)
-                .map(key -> metaModel.getDeleteSql(viewObject,key))
-                .map(sp->jdbcTemplate.update(sp.getSql(),sp.getParams())).orElse(0);
+        return tx.execute(int.class,()->{
+            Object id = (record instanceof Map) ? ((Map) record).get(viewObject.getKeyField().getFieldAlias()) : record;
+            return Optional.ofNullable(id)
+                    .map(key -> metaModel.getDeleteSql(viewObject, key))
+                    .map(sp -> jdbcTemplate.update(sp.getSql(), sp.getParams())).orElse(0);
+        });
+
     }
 
     /**
@@ -219,10 +238,12 @@ public class MetaModelService {
      * @return
      */
     public int delete(String viewAlias, Object record){
-        return metaModel.getModelViewObjects().values().stream()
-                .filter(v->viewAlias.equals(v.getViewAlias()))
-                .map(v-> delete(v,record))
-                .findFirst().orElse(0);
+        return tx.execute(int.class,()->{
+            return metaModel.getModelViewObjects().values().stream()
+                    .filter(v -> viewAlias.equals(v.getViewAlias()))
+                    .map(v -> delete(v, record))
+                    .findFirst().orElse(0);
+        });
     }
 
     /**
@@ -231,7 +252,9 @@ public class MetaModelService {
      * @return
      */
     public int deleteModelRecordByKey(Object id){
-        return metaModel.getDeleteByMainKeySqls(id).stream().mapToInt(sp -> jdbcTemplate.update(sp.getSql(),sp.getParams())).sum();
+        return tx.execute(int.class,()->{
+            return metaModel.getDeleteByMainKeySqls(id).stream().mapToInt(sp -> jdbcTemplate.update(sp.getSql(), sp.getParams())).sum();
+        });
     }
 
     /**
@@ -240,11 +263,12 @@ public class MetaModelService {
      * @return
      */
     public int deleteModelRecord(Map record){
-        return Optional.ofNullable(metaModel.getMainViewObject())
-                .map(RapMetaViewObject::getKeyField)
-                .map(RapMetaViewField::getFieldAlias)
-                .map(key -> record.get(key)).map(this::deleteModelRecordByKey).orElse(0);
-
+        return tx.execute(int.class,()->{
+            return Optional.ofNullable(metaModel.getMainViewObject())
+                    .map(RapMetaViewObject::getKeyField)
+                    .map(RapMetaViewField::getFieldAlias)
+                    .map(key -> record.get(key)).map(this::deleteModelRecordByKey).orElse(0);
+        });
     }
 
     /**
