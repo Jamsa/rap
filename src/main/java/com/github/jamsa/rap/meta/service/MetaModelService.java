@@ -82,14 +82,20 @@ public class MetaModelService {
                 return ps;
             },keyHolder);
 
+            if(keyHolder.getKeys()!=null && !keyHolder.getKeys().isEmpty()){
+                record.put(viewObject.getKeyField().getFieldAlias(),keyHolder.getKey().longValue());
+            }
+
             //获取生成的主键值
+            /*
             viewObject.getViewFields().values().stream().filter(f->f.getFieldType()==ModelViewFieldType.TABLE_COLUMN
                     && f.getGenerator()==ModelViewFieldGeneratorType.NATIVE
                     && keyHolder.getKeys()!=null
                     && keyHolder.getKeys().containsKey(f.getFieldCode())).forEach(f->{
                 String fieldCode = f.getFieldCode();
-                record.put(f.getFieldAlias(),keyHolder.getKeys().get(fieldCode));
-            });
+                //record.put(f.getFieldAlias(),keyHolder.getKeys().get(fieldCode));
+                //record.put(f.getFieldAlias(),keyHolder.getKey().longValue());//todo 数据类型
+            });*/
         }
             return record;
         });
@@ -111,18 +117,19 @@ public class MetaModelService {
 
             //保存附表
             metaModel.getModelViewObjects().values().stream().filter(v -> v.getViewType() == ModelViewObjectType.ADDITIONAL).forEach(v -> {
-                record.put(v.getRefField().getFieldAlias(), keyValue); //附表关联字段
+                record.put(v.getRelField().getFieldAlias(), keyValue); //附表关联字段
                 save(v, record);
             });
 
             //保存子表
             metaModel.getModelViewObjects().values().stream().filter(v -> v.getViewType() == ModelViewObjectType.SUBTABLE).forEach(v -> {
                 Map viewOperations = (Map) record.get(v.getViewAlias());
+                if(viewOperations==null) return;
                 Object viewRecords = viewOperations.get(Constant.RECORD_ADD_ROWS_KEY);
                 if (viewRecords != null && viewRecords instanceof List) {
                     ((List) viewRecords).stream().forEach(row -> {
                         Map rowRecord = (Map) row;
-                        rowRecord.put(v.getRefField().getFieldAlias(), keyValue); //子表关联字段
+                        rowRecord.put(v.getRelField().getFieldAlias(), keyValue); //子表关联字段
                         save(v, rowRecord);
                     });
                 }
@@ -182,11 +189,12 @@ public class MetaModelService {
             //更新子表
             metaModel.getModelViewObjects().values().stream().filter(v -> v.getViewType() == ModelViewObjectType.SUBTABLE).forEach(v -> {
                 Map viewOperations = (Map) record.get(v.getViewAlias());
+                if(viewOperations==null) return;
                 Object viewRecords = viewOperations.get(Constant.RECORD_ADD_ROWS_KEY);
                 if (viewRecords != null && viewRecords instanceof List) {
                     ((List) viewRecords).stream().forEach(row -> {
                         Map rowRecord = (Map) row;
-                        rowRecord.put(v.getRefField().getFieldAlias(), keyValue); //子表关联字段
+                        rowRecord.put(v.getRelField().getFieldAlias(), keyValue); //子表关联字段
                         save(v, rowRecord);
                     });
                 }

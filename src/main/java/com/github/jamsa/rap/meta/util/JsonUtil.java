@@ -1,10 +1,15 @@
 package com.github.jamsa.rap.meta.util;
 
+import com.fasterxml.jackson.annotation.JsonInclude;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.deser.DeserializerFactory;
 import com.fasterxml.jackson.databind.deser.std.DateDeserializers;
+import com.fasterxml.jackson.databind.deser.std.UntypedObjectDeserializer;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 import com.github.jamsa.rap.meta.Constant;
 import com.github.jamsa.rap.meta.model.ModelViewObjectType;
 import com.github.jamsa.rap.meta.model.RapMetaModel;
@@ -30,6 +35,21 @@ public class JsonUtil {
 
     public static Map parseRequestJson(Reader reader, RapMetaModel metaModel) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
+        SimpleModule module = new SimpleModule();
+        module.addDeserializer(Object.class, new UntypedObjectDeserializer(){
+            @Override
+            public Object deserialize(JsonParser jp, DeserializationContext ctxt)
+                    throws IOException {
+                switch (jp.getCurrentToken()) {
+                    case VALUE_NULL:
+                        return null;
+                    default:
+                        return super.deserialize(jp, ctxt);
+                }
+            }
+        });
+        mapper.registerModule(module);
+
         Map result = mapper.readValue(reader, new TypeReference<HashMap>(){});
         convertRequestParams(metaModel,result);
         return result;
@@ -62,7 +82,8 @@ public class JsonUtil {
                     }
                     params.put(f.getFieldAlias(), result);
                 }catch (Exception e){
-                    e.printStackTrace();
+                    //e.printStackTrace();
+                    params.put(f.getFieldAlias(),null); //todo:
                 }
             }
         });

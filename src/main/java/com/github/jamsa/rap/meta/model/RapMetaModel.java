@@ -52,7 +52,7 @@ public class RapMetaModel  extends BaseEntity<Integer> {
 
     protected String getDeleteByMainKeySql(RapMetaModelViewObject v){
         return Optional.ofNullable(v).filter(RapMetaModelViewObject::isDeletable)
-                .map(mv->mv.getViewType()==ModelViewObjectType.MAIN?mv.getKeyField():mv.getRefField())
+                .map(mv->mv.getViewType()==ModelViewObjectType.MAIN?mv.getKeyField():mv.getRelField())
                 //.map(RapMetaViewField::getTableField)
                 .map(tf->"delete from "+tf.getViewObject().getTableCode()+" where "+tf.getFieldCode()+"=?").orElse(null);
     }

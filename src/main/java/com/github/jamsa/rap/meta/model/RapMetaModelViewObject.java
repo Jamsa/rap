@@ -5,17 +5,17 @@ public class RapMetaModelViewObject extends RapMetaViewObject{
     private boolean updatable=true;
     private boolean deletable=true;
     private boolean creatable=true;
-    private Long refFieldId;
+    private Long relFieldId;
     private Long modelId;
     private String viewAlias;
 
-    private RapMetaViewField refField;
+    private RapMetaViewField relField;
     private RapMetaModel model;
 
     @Override
     public void addViewField(RapMetaViewField viewField) {
         super.addViewField(viewField);
-        if(viewField.getFieldId().equals(refFieldId)) this.refField = viewField;
+        if(viewField.getFieldId().equals(relFieldId)) this.relField = viewField;
     }
 
     public String getViewAlias() {
@@ -63,21 +63,21 @@ public class RapMetaModelViewObject extends RapMetaViewObject{
         this.creatable = creatable;
     }
 
-    public RapMetaViewField getRefField() {
-        return refField;
+    public RapMetaViewField getRelField() {
+        return relField;
     }
 
-    public void setRefField(RapMetaViewField refField) {
-        this.refField = refField;
+    public void setRelField(RapMetaViewField relField) {
+        this.relField = relField;
     }
 
-    public Long getRefFieldId() {
-        return refFieldId;
+    public Long getRelFieldId() {
+        return relFieldId;
     }
 
-    public void setRefFieldId(Long refFieldId) {
-        this.firePropertyChange("refFieldId",refFieldId);
-        this.refFieldId = refFieldId;
+    public void setRelFieldId(Long relFieldId) {
+        this.firePropertyChange("relFieldId", relFieldId);
+        this.relFieldId = relFieldId;
     }
 
     public Long getModelId() {

@@ -348,7 +348,7 @@
   f.LAST_UPDATED_BY
 from RAP_META_VIEW_FIELD f,RAP_META_VIEW_OBJECT v,RAP_META_MODEL_OBJECT mv,RAP_META_MODEL m
 where f.VIEW_OBJECT_ID = v.VIEW_OBJECT_ID and v.VIEW_OBJECT_ID=mv.VIEW_OBJECT_ID and mv.MODEL_ID=m.MODEL_ID
-and m.MODEL_ID=1 = #{modelId,jdbcType=INTEGER}
+and m.MODEL_ID= #{modelId,jdbcType=INTEGER}
 </select>
 
 </mapper>

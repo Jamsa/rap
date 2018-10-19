@@ -1,6 +1,7 @@
 package com.github.jamsa.rap.meta.controller;
 
 import com.github.jamsa.rap.meta.model.RapMetaModel;
+import com.github.jamsa.rap.meta.model.RapMetaModelViewObject;
 import com.github.jamsa.rap.meta.service.MetaModelService;
 import com.github.jamsa.rap.meta.util.JsonUtil;
 import com.github.pagehelper.PageInfo;
@@ -64,30 +65,33 @@ public class MetaModelController {
                 if (HttpMethod.POST.name().equals(requestMetod)) {
                     return save(request);
                 }
+            }
+
+            if (uriSegments.length==2) {
+                String seg2 = uriSegments[1];
+                //主表记录查询
+                if (HttpMethod.GET.name().equals(requestMetod)) {
+                    return findByPrimaryKey(request,seg2);
+                }
+
+                if (HttpMethod.DELETE.name().equals(requestMetod)) {
+                    return deleteByPrimaryKey(request,seg2);
+                }
 
                 if (HttpMethod.PUT.name().equals(requestMetod)) {
                     return update(request);
                 }
             }
 
-            if (uriSegments.length==2) {
-                String seg2 = uriSegments[1];
-                if(metaModel.isSubTableViewAlias(seg2)){ //子表记录查询
-
+            if(uriSegments.length==3){
+                String seg3 = uriSegments[2];
+                if(metaModel.isSubTableViewAlias(seg3)){ //子表记录查询
                     if (HttpMethod.GET.name().equals(requestMetod)) {
-                        return findByPage(request,seg2);
+                        return findByPage(request,uriSegments[1],seg3);
                     }
                 }else {
-                    //主表记录查询
-                    if (HttpMethod.GET.name().equals(requestMetod)) {
-                        return findByPrimaryKey(request,seg2);
-                    }
 
-                    if (HttpMethod.DELETE.name().equals(requestMetod)) {
-                        return deleteByPrimaryKey(request,seg2);
-                    }
                 }
-
             }
         }
 
@@ -110,7 +114,7 @@ public class MetaModelController {
 
         //new JsonFactory().createParser(request.getReader())
 
-        return findByPage(request,null);
+        return findByPage(request,null,null);
     }
 
     protected Map<String,String> getParameterMap(HttpServletRequest request){
@@ -120,10 +124,22 @@ public class MetaModelController {
                         (m1,m2)->m1.putAll(m2));
     }
 
-    public ResponseEntity findByPage(HttpServletRequest request,String viewAlias){
+    public ResponseEntity findByPage(HttpServletRequest request,String mainId,String viewAlias){
         checkPermissions("view");
+
         Map condition = getParameterMap(request);
-        condition = JsonUtil.convertRequestParams(metaModel,condition);
+
+        //主表主键
+        if(!StringUtils.isEmpty(mainId) && !StringUtils.isEmpty(viewAlias)) {
+            RapMetaModelViewObject vo = metaModel.getModelViewObjects().get(viewAlias);
+            condition.put(vo.getRelField().getFieldAlias(), mainId);
+            condition = JsonUtil.convertRequestParams(metaModel,viewAlias,condition);
+        }else{
+            condition = JsonUtil.convertRequestParams(metaModel,condition);
+        }
+
+
+
         PageInfo page = new PageInfo();
 
         //todo
@@ -148,7 +164,11 @@ public class MetaModelController {
         checkPermissions("view");
 
         //todo id改为object类型，在调用的地方进行类型转换
-        Object result = metaModelService.findModelRecordByKey(id);
+        Map params = new HashMap();
+        params.put(metaModel.getMainViewObject().getKeyField().getFieldAlias(),id);
+        params = JsonUtil.convertRequestParams(metaModel.getMainViewObject(),params);
+
+        Object result = metaModelService.findModelRecordByKey(params.get(metaModel.getMainViewObject().getKeyField().getFieldAlias()));
         if(result!=null){
             return ResponseEntity.ok(result);
         }else{
