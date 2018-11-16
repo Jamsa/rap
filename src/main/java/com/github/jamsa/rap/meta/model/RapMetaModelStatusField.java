@@ -1,31 +1,32 @@
 package com.github.jamsa.rap.meta.model;
 
 public class RapMetaModelStatusField extends RapMetaViewField {
-    private Long fieldId;
-    private String fieldCode;
+    //private Integer fieldId;
     private boolean hidden;
     private boolean readonly;
     private boolean required;
 
+    private String statusCode;
+    private boolean defaultStatus;
+    private Long modelStatusId;
+
+    /*@Override
+    public Integer getPrimaryKey() {
+        return this.fieldId;
+    }
+
     @Override
-    public Long getFieldId() {
+    public void setPrimaryKey(Integer primaryKey) {
+        this.fieldId=primaryKey;
+    }
+
+    public Integer getFieldId() {
         return fieldId;
     }
 
-    @Override
-    public void setFieldId(Long fieldId) {
+    public void setFieldId(Integer fieldId) {
         this.fieldId = fieldId;
-    }
-
-    @Override
-    public String getFieldCode() {
-        return fieldCode;
-    }
-
-    @Override
-    public void setFieldCode(String fieldCode) {
-        this.fieldCode = fieldCode;
-    }
+    }*/
 
     public boolean isHidden() {
         return hidden;
@@ -49,5 +50,33 @@ public class RapMetaModelStatusField extends RapMetaViewField {
 
     public void setRequired(boolean required) {
         this.required = required;
+    }
+
+    public String getStatusCode() {
+        return statusCode;
+    }
+
+    public void setStatusCode(String statusCode) {
+        this.statusCode = statusCode;
+    }
+
+    public boolean isDefaultStatus() {
+        return defaultStatus;
+    }
+
+    public void setDefaultStatus(boolean defaultStatus) {
+        this.defaultStatus = defaultStatus;
+    }
+
+    public Long getModelStatusId() {
+        return modelStatusId;
+    }
+
+    public void setModelStatusId(Long modelStatusId) {
+        this.modelStatusId = modelStatusId;
+    }
+
+    public void apply(RapMetaViewField f) {
+
     }
 }

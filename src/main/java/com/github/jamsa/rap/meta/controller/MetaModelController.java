@@ -69,6 +69,12 @@ public class MetaModelController {
 
             if (uriSegments.length==2) {
                 String seg2 = uriSegments[1];
+
+                //获取元数据
+                if(seg2.equals("meta")){
+                    return ResponseEntity.ok(metaModel.getDefaultMetaModelStatus());
+                }
+
                 //主表记录查询
                 if (HttpMethod.GET.name().equals(requestMetod)) {
                     return findByPrimaryKey(request,seg2);
@@ -84,7 +90,14 @@ public class MetaModelController {
             }
 
             if(uriSegments.length==3){
+                String seg2 = uriSegments[1];
                 String seg3 = uriSegments[2];
+
+                //获取元数据,seg3为状态代码
+                if(seg2.equals("meta")){
+                    return ResponseEntity.ok(metaModel.getModelStatus().get(seg3));
+                }
+
                 if(metaModel.isSubTableViewAlias(seg3)){ //子表记录查询
                     if (HttpMethod.GET.name().equals(requestMetod)) {
                         return findByPage(request,uriSegments[1],seg3);
@@ -139,11 +152,24 @@ public class MetaModelController {
         }
 
 
-
         PageInfo page = new PageInfo();
 
-        //todo
-        //request.getParameter("pageSize")
+        String pageSize = request.getParameter("pageSize");
+        if(pageSize!=null){
+            try {
+                page.setPageSize(Integer.parseInt(pageSize));
+            }catch (NumberFormatException nfe){
+                page.setPageSize(0);
+            }
+        }
+        String pageNum = request.getParameter("pageNum");
+        if(pageNum!=null){
+            try {
+                page.setPageNum(Integer.parseInt(pageNum));
+            }catch (NumberFormatException nfe){
+                page.setPageNum(0);
+            }
+        }
 
         if(page.getPageSize()==0){
             page.setPageSize(10);

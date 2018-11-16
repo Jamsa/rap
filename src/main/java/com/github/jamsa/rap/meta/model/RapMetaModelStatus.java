@@ -38,7 +38,10 @@ public class RapMetaModelStatus{
         return modelStatusFields;
     }
 
-    public void setModelStatusFields(Map<String, RapMetaModelStatusField> modelStatusFields) {
+    /*public void setModelStatusFields(Map<String, RapMetaModelStatusField> modelStatusFields) {
         this.modelStatusFields = modelStatusFields;
+    }*/
+    public void addModelStatusField(RapMetaModelStatusField modelStatusField) {
+        this.modelStatusFields.put(modelStatusField.getFieldAlias(),modelStatusField);
     }
 }

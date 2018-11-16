@@ -6,7 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 
 /**
  * 元数据服务，用于获取各种元数据
@@ -22,6 +24,9 @@ public class MetaDataService {
 
     @Autowired
     private RapMetaViewFieldMapper rapMetaViewFieldMapper;
+
+    @Autowired
+    private RapMetaDataMapper rapMetaDataMapper;
 
     //@Autowired
     //private RapMetaTableMapper rapMetaTableMapper;
@@ -58,6 +63,23 @@ public class MetaDataService {
             //Long tableId = v.getTableId();
             //if(tableId!=null) v.setTable(tables.get(tableId));
             model.addModelViewObject(v);
+        });
+
+        List<RapMetaModelStatusField> statusFields = rapMetaDataMapper.selectStatusFieldsByModelId(modelId);
+
+        if(statusFields==null || statusFields.isEmpty() || !statusFields.stream().anyMatch(f->f.isDefaultStatus())){
+            statusFields.addAll(rapMetaDataMapper.selectEmptyStatusFieldsByModelId(modelId));
+        }
+        statusFields.forEach(sf->{
+            RapMetaModelStatus status = model.getModelStatus().get(sf.getStatusCode());
+            if(status==null){
+                status = new RapMetaModelStatus();
+                status.setDefaultStatus(sf.isDefaultStatus());
+                status.setStatusCode(sf.getStatusCode());
+                status.setModelStatusId(sf.getModelStatusId());
+                model.addModelStatus(status);
+            }
+            status.addModelStatusField(sf);
         });
 
         return model;

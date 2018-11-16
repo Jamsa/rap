@@ -343,7 +343,7 @@ public class MetaModelService {
 
         Long total = jdbcTemplate.queryForObject(countSql,Long.class,sqlAndParamValues.getParams());
 
-        List<Map<String,Object>> data = jdbcTemplate.queryForList(sqlAndParamValues.getSql(),sqlAndParamValues.getParams());
+        List<Map<String,Object>> data = jdbcTemplate.queryForList(sql,sqlAndParamValues.getParams());
         data = convertQueryResultList(v,data);
         page.setList(data);
         page.setTotal(total);

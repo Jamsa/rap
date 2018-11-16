@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.github.jamsa.rap.meta.mapper.RapMetaDataMapper">
+
+  <resultMap id="StatusFieldResultMap" type="com.github.jamsa.rap.meta.model.RapMetaModelStatusField">
+    <id column="STATUS_CODE" jdbcType="VARCHAR" property="statusCode" />
+    <result column="FIELD_ID" jdbcType="INTEGER" property="fieldId" />
+    <result column="VIEW_OBJECT_ID" jdbcType="INTEGER" property="viewObjectId" />
+    <result column="MODEL_STATUS_ID" jdbcType="INTEGER" property="modelStatusId" />
+    <result column="READONLY" jdbcType="VARCHAR" property="readonly" />
+    <result column="REQUIRED" jdbcType="VARCHAR" property="required" />
+    <result column="HIDDEN" jdbcType="VARCHAR" property="hidden" />
+    <result column="DEFAULT_STATUS" jdbcType="VARCHAR" property="defaultStatus" />
+
+    <result column="FIELD_NAME" jdbcType="VARCHAR" property="fieldName" />
+    <result column="FIELD_CODE" jdbcType="VARCHAR" property="fieldCode" />
+    <result column="FIELD_ALIAS" jdbcType="VARCHAR" property="fieldAlias" />
+
+    <result column="FIELD_TYPE" jdbcType="VARCHAR" property="fieldType" />
+    <result column="DATA_TYPE" jdbcType="VARCHAR" property="dataType" />
+    <result column="UNIQ" jdbcType="VARCHAR" property="uniq" />
+    <result column="KEY_FIELD" jdbcType="VARCHAR" property="keyField" />
+    <result column="FIELD_LENGTH" jdbcType="INTEGER" property="fieldLength" />
+    <result column="FIELD_PRECISION" jdbcType="INTEGER" property="fieldPrecision" />
+
+    <result column="CREATED_BY" jdbcType="INTEGER" property="createdBy" />
+    <result column="CREATION_DATE" jdbcType="TIMESTAMP" property="creationDate" />
+    <result column="LAST_UPDATE_DATE" jdbcType="TIMESTAMP" property="lastUpdateDate" />
+    <result column="LAST_UPDATED_BY" jdbcType="INTEGER" property="lastUpdatedBy" />
+  </resultMap>
+
+
+  <select id="selectStatusFieldsByModelId" parameterType="java.lang.Long" resultMap="StatusFieldResultMap">
+select
+  s.STATUS_CODE,f.MODEL_STATUS_ID,f.FIELD_ID,f.READONLY,f.REQUIRED,f.HIDDEN,s.DEFAULT_STATUS,
+  vf.VIEW_OBJECT_ID,vf.KEY_FIELD,vf.DATA_TYPE,vf.FIELD_ALIAS,vf.FIELD_CODE,vf.FIELD_LENGTH,vf.FIELD_NAME,vf.FIELD_PRECISION,vf.FIELD_TYPE,vf.GENERATOR,vf.GENERATOR_PARAM,vf.UNIQ
+from
+  RAP_META_MODEL m,
+  RAP_META_MODEL_STATUS s,
+  RAP_META_MODEL_STATUS_FIELD f,
+  RAP_META_VIEW_FIELD vf
+where m.MODEL_ID=s.MODEL_ID
+      and s.MODEL_STATUS_ID=f.MODEL_STATUS_ID
+      and f.FIELD_ID=vf.FIELD_ID
+and m.MODEL_ID=#{modelId,jdbcType=INTEGER}
+  </select>
+
+  <select id="selectEmptyStatusFieldsByModelId" parameterType="java.lang.Long" resultMap="StatusFieldResultMap">
+    select
+  'A' as STATUS_CODE,-1 MODEL_STATUS_ID,vf.FIELD_ID,'0' as READONLY,'0' as REQUIRED,'0' as HIDDEN,'1' as DEFAULT_STATUS,
+  vf.VIEW_OBJECT_ID,vf.KEY_FIELD,vf.DATA_TYPE,vf.FIELD_ALIAS,vf.FIELD_CODE,vf.FIELD_LENGTH,vf.FIELD_NAME,vf.FIELD_PRECISION,vf.FIELD_TYPE,vf.GENERATOR,vf.GENERATOR_PARAM,vf.UNIQ
+from
+  RAP_META_MODEL m,
+  RAP_META_MODEL_OBJECT v,
+  RAP_META_VIEW_FIELD vf
+where m.MODEL_ID=v.MODEL_ID
+      and v.VIEW_OBJECT_ID=vf.VIEW_OBJECT_ID
+      and m.MODEL_ID=#{modelId,jdbcType=INTEGER}
+  </select>
+
+</mapper>
